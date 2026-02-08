@@ -13,6 +13,19 @@ client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 app = FastAPI()
 app.mount("/", StaticFiles(directory="static", html=True), name="static")
+from fastapi.responses import Response
+@app.get("/sitemap.xml")
+def sitemap():
+    xml = """<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://rulemate-india.onrender.com/</loc>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+  </url>
+</urlset>
+"""
+    return Response(content=xml, media_type="application/xml")
 
 SYSTEM_PROMPT = """
 You are an Indian Government Rules Assistant.
@@ -262,4 +275,5 @@ Return ONLY the questions, one per line.
         "slug": slug,
         "related": related
     }
+
 
