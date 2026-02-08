@@ -1,4 +1,5 @@
 import re
+from fastapi.staticfiles import StaticFiles
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
@@ -11,6 +12,7 @@ load_dotenv()
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 app = FastAPI()
+app.mount("/", StaticFiles(directory="static", html=True), name="static")
 
 SYSTEM_PROMPT = """
 You are an Indian Government Rules Assistant.
@@ -260,3 +262,4 @@ Return ONLY the questions, one per line.
         "slug": slug,
         "related": related
     }
+
