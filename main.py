@@ -231,6 +231,9 @@ window.history.pushState({}, "", url);
 </html>
 
 """
+@app.get("/{slug}", response_class=HTMLResponse)
+def dynamic_page(slug: str):
+    return home()
 
 @app.post("/ask")
 def ask_rule(q: Question):
@@ -288,5 +291,6 @@ def sitemap():
 </urlset>
 """
     return Response(content=xml, media_type="application/xml")
+
 
 
