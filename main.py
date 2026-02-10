@@ -68,7 +68,7 @@ class Question(BaseModel):
 @app.get("/", response_class=HTMLResponse)
 def home():
     return """
-return f"""
+return """
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -352,6 +352,7 @@ def sitemap():
 </urlset>
 """
     return Response(content=xml, media_type="application/xml")
+
 
 
 
