@@ -328,12 +328,12 @@ def home():
         </div>
 
         <div class="search-box">
-            <input id="q" placeholder="Example: Traffic fine for no helmet in Telangana" />
+            <input id="q" placeholder="Example: What are the latest traffic rules in India?" />
             <button onclick="ask()">Ask</button>
         </div>
 
         <div class="badge">
-            ✔ Verified Government Rule Explanation
+            ✔ Clarifying Indian regulations through an educational lens.
         </div>
 
         <div class="answer-box" id="a"></div>
@@ -420,3 +420,4 @@ def home():
 @app.get("/{slug}", response_class=HTMLResponse)
 def dynamic_page(slug: str):
     return home()
+
