@@ -46,6 +46,7 @@ def sitemap():
 
 @app.post("/ask")
 def ask_rule(q: Question):
+    # Main Answer call
     response = client.chat.completions.create(
         model="gpt-4o-mini",
         messages=[{"role": "system", "content": SYSTEM_PROMPT}, {"role": "user", "content": q.question}],
@@ -54,12 +55,21 @@ def ask_rule(q: Question):
     answer = response.choices[0].message.content
     slug = slugify(q.question)
     
+    # Updated Related Questions Prompt to ensure exactly 4
     related_response = client.chat.completions.create(
         model="gpt-4o-mini",
-        messages=[{"role": "system", "content": "Generate 4 related follow-up questions."}, {"role": "user", "content": q.question}],
-        temperature=0.4
+        messages=[
+            {"role": "system", "content": "You are a helpful assistant. Generate EXACTLY 4 short related questions about Indian laws. Return them as a simple list with one question per line. Do not include extra text."},
+            {"role": "user", "content": f"Provide 4 follow-up questions for: {q.question}"}
+        ],
+        temperature=0.5
     )
+    # Split and clean to ensure we only have non-empty strings
     related = [r.strip("- ").strip() for r in related_response.choices[0].message.content.split("\n") if r.strip()]
+    
+    # Hard enforcement: if AI fails to give 4, we pad or slice to keep the UI consistent
+    related = related[:4] 
+
     return {"answer": answer, "slug": slug, "related": related}
 
 @app.get("/", response_class=HTMLResponse)
@@ -184,12 +194,15 @@ def home():
                 const data = await response.json();
                 aiAnswer.innerText = data.answer;
                 relatedBox.innerHTML = "";
+                
                 data.related.forEach(q => {
                     const div = document.createElement('div');
                     div.className = 'related-q';
                     div.innerText = q;
                     div.onclick = () => { 
-                        queryInput.value = q; 
+                        // Strip serial numbers like "1. ", "2) ", etc.
+                        let cleanQ = q.replace(/^\d+[\.\)\s]+/, '');
+                        queryInput.value = cleanQ; 
                         handleAsk(); 
                         window.scrollTo({ top: 0, behavior: 'smooth' }); 
                     };
