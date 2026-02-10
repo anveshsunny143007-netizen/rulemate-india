@@ -1,3 +1,4 @@
+
 import re
 from fastapi.staticfiles import StaticFiles
 from fastapi import FastAPI
@@ -291,3 +292,21 @@ xml = """<?xml version="1.0" encoding="UTF-8"?>
 </urlset>
 """
 return Response(content=xml, media_type="application/xml")
+
+
+from fastapi.responses import Response
+
+@app.get("/sitemap.xml", response_class=Response)
+def sitemap():
+xml = """<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<url>
+<loc>https://rulemate-india.onrender.com/</loc>
+<priority>1.0</priority>
+</url>
+</urlset>
+"""
+return Response(content=xml, media_type="application/xml")
+
+
+
