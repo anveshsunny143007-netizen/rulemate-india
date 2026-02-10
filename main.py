@@ -77,100 +77,140 @@ def home():
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <style>
-        body {
-            margin: 0;
-            font-family: system-ui, Arial;
-            background: linear-gradient(135deg, #f8fafc, #eef2ff);
-        }
+        <style>
+    :root {
+        --primary: #2563eb;
+        --bg: #f8fafc;
+        --card: #ffffff;
+        --text: #0f172a;
+        --muted: #475569;
+    }
 
+    * {
+        box-sizing: border-box;
+    }
+
+    body {
+        margin: 0;
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto;
+        background: linear-gradient(180deg, #f1f5f9, #ffffff);
+        color: var(--text);
+    }
+
+    .container {
+        max-width: 720px;
+        margin: 70px auto;
+        background: var(--card);
+        padding: 36px;
+        border-radius: 18px;
+        box-shadow: 0 25px 60px rgba(0,0,0,0.08);
+    }
+
+    h1 {
+        text-align: center;
+        margin-bottom: 6px;
+        font-size: 32px;
+        letter-spacing: -0.5px;
+    }
+
+    .subtitle {
+        text-align: center;
+        color: var(--muted);
+        margin-bottom: 30px;
+        font-size: 15px;
+    }
+
+    input {
+        width: 100%;
+        padding: 16px;
+        font-size: 16px;
+        border-radius: 10px;
+        border: 1px solid #cbd5f5;
+        outline: none;
+    }
+
+    input:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(37,99,235,0.15);
+    }
+
+    button {
+        width: 100%;
+        padding: 15px;
+        margin-top: 14px;
+        font-size: 16px;
+        border-radius: 10px;
+        border: none;
+        background: linear-gradient(135deg, #2563eb, #1d4ed8);
+        color: white;
+        cursor: pointer;
+        font-weight: 600;
+    }
+
+    button:hover {
+        opacity: 0.95;
+    }
+
+    .trust {
+        margin-top: 14px;
+        font-size: 13px;
+        color: #2563eb;
+        text-align: center;
+        font-weight: 500;
+    }
+
+    .answer-box {
+        margin-top: 30px;
+        padding: 24px;
+        background: #f9fafb;
+        border-radius: 14px;
+        border-left: 5px solid var(--primary);
+        white-space: pre-wrap;
+        font-size: 15px;
+        line-height: 1.7;
+    }
+
+    .answer-box strong {
+        color: #020617;
+    }
+
+    #related {
+        margin-top: 20px;
+        font-size: 14px;
+    }
+
+    .footer {
+        margin-top: 40px;
+        font-size: 12px;
+        color: #64748b;
+        text-align: center;
+        line-height: 1.6;
+    }
+
+    @media (max-width: 640px) {
         .container {
-            max-width: 650px;
-            margin: 60px auto;
-            background: #ffffff;
-            padding: 30px;
-            border-radius: 14px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.08);
+            margin: 30px 14px;
+            padding: 24px;
         }
+    }
+</style>
 
-        h1 {
-            margin-top: 0;
-            text-align: center;
-        }
-
-        .subtitle {
-            text-align: center;
-            color: #555;
-            margin-bottom: 25px;
-        }
-
-        input {
-            width: 100%;
-            padding: 14px;
-            font-size: 16px;
-            border-radius: 8px;
-            border: 1px solid #ccc;
-            box-sizing: border-box;
-        }
-
-        button {
-            width: 100%;
-            padding: 14px;
-            margin-top: 14px;
-            font-size: 16px;
-            border-radius: 8px;
-            border: none;
-            background: #2563eb;
-            color: white;
-            cursor: pointer;
-        }
-
-        button:hover {
-            background: #1d4ed8;
-        }
-
-       .answer-box {
-    margin-top: 25px;
-    padding: 20px;
-    background: #f9fafb;
-    border-radius: 12px;
-    border-left: 5px solid #2563eb;
-    white-space: pre-wrap;
-    font-size: 15px;
-    line-height: 1.6;
-}
-
-.answer-box strong {
-    color: #111827;
-}
-
-.answer-box h3 {
-    margin-bottom: 6px;
-    color: #1d4ed8;
-}
-
-
-        .footer {
-            margin-top: 30px;
-            font-size: 12px;
-            color: #777;
-            text-align: center;
-        }
-    </style>
 </head>
 
 <body>
 <div class="container">
     <h1>🇮🇳 RuleMate India</h1>
     <div class="subtitle">
-        Ask Indian government rules in simple language
+        Simple explanations of Indian government rules, laws, fines and procedures
     </div>
 
     <input id="q" placeholder="Example: Traffic fine for no helmet in Telangana" />
     <button onclick="ask()">Ask</button>
 
-    <div style="font-size:12px;color:#2563eb;margin-top:14px;">
-    ✔ Verified Government Rule Explanation
+    <div class="trust">
+    ✔ Educational explanation based on Indian government laws
 </div>
+
 
 <div class="answer-box" id="a"></div>
 <div id="related" style="margin-top:18px;font-size:14px;"></div>
@@ -306,5 +346,6 @@ def sitemap():
 </urlset>
 """
     return Response(content=xml, media_type="application/xml")
+
 
 
