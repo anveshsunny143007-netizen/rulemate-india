@@ -114,304 +114,180 @@ Return ONLY the questions, one per line.
 def home():
     return """
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<title>Indian Government Rules Explained Simply | RuleMate India</title>
-<meta name="description" content="Ask Indian government rules, IPC sections, fines, punishments and legal procedures in simple language. Trusted rule explainer for India.">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
-<style>
-    :root {
-        --bg-color: #0f172a;
-        --card-bg: #1e293b;
-        --text-primary: #f8fafc;
-        --text-secondary: #94a3b8;
-        --accent-color: #3b82f6;
-        --accent-hover: #2563eb;
-        --glow: 0 0 20px rgba(59, 130, 246, 0.5);
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RuleMate India</title>
+    <style>
+        /* 1. BACKGROUND & LAYOUT (AISongCreator Style) */
+        body {
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            /* Radial glow from the top center */
+            background: radial-gradient(circle at 50% -10%, #1a1b3a 0%, #030414 70%);
+            background-color: #030414;
+            color: #ffffff;
+            font-family: 'Inter', -apple-system, sans-serif;
+            padding: 60px 20px;
+        }
 
-    body {
-        margin: 0;
-        font-family: 'Inter', sans-serif;
-        background-color: var(--bg-color);
-        color: var(--text-primary);
-        display: flex;
-        flex-direction: column;
-        min-height: 100vh;
-        align-items: center;
-    }
+        /* 2. HEADER & LOGO */
+        .logo-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 10px;
+        }
 
-    /* Background decoration */
-    body::before {
-        content: "";
-        position: fixed;
-        top: -50%;
-        left: -50%;
-        width: 200%;
-        height: 200%;
-        background: radial-gradient(circle at center, rgba(30, 41, 59, 0.8) 0%, rgba(15, 23, 42, 1) 70%);
-        z-index: -1;
-    }
+     
 
-    .container {
-        width: 100%;
-        max-width: 700px;
-        margin-top: 60px;
-        padding: 20px;
-        box-sizing: border-box;
-        text-align: center;
-    }
+        h1 {
+            font-size: 3.5rem;
+            font-weight: 800;
+            margin: 0;
+            letter-spacing: -0.04em;
+        }
 
-    h1 {
-        font-size: 2.5rem;
-        font-weight: 700;
-        margin-bottom: 10px;
-        background: linear-gradient(90deg, #fff, #94a3b8);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        letter-spacing: -1px;
-    }
+        .hero-subtitle {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 1.25rem;
+            margin-bottom: 40px;
+            text-align: center;
+        }
 
-    .subtitle {
-        color: var(--text-secondary);
-        font-size: 1.1rem;
-        margin-bottom: 40px;
-        font-weight: 300;
-    }
+        /* 3. THE GLASS CARD (Semi-transparent with blur) */
+        .glass-card {
+            background: rgba(25, 25, 31, 0.6);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            padding: 40px;
+            width: 100%;
+            max-width: 720px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.6);
+            margin-bottom: 60px;
+            box-sizing: border-box;
+        }
 
-    .search-box {
-        position: relative;
-        background: rgba(30, 41, 59, 0.6);
-        padding: 15px;
-        border-radius: 16px;
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        backdrop-filter: blur(10px);
-        box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-    }
+        .search-input {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+            color: white;
+            font-size: 1.05rem;
+            margin-bottom: 24px;
+            box-sizing: border-box;
+            outline: none;
+        }
 
-    input {
-        width: 100%;
-        padding: 16px;
-        font-size: 16px;
-        background: transparent;
-        border: none;
-        color: white;
-        outline: none;
-        box-sizing: border-box;
-    }
+        /* THE SPECIFIC PURPLE BUTTON */
+        .btn-ask {
+            width: 100%;
+            background: #7053ff;
+            color: white;
+            border: none;
+            padding: 18px;
+            border-radius: 12px;
+            font-size: 1.15rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
 
-    input::placeholder {
-        color: rgba(148, 163, 184, 0.6);
-    }
+        .btn-ask:hover {
+            background: #5a3fff;
+            transform: translateY(-1px);
+            box-shadow: 0 0 25px rgba(112, 83, 255, 0.4);
+        }
 
-    button {
-        width: 100%;
-        padding: 14px;
-        font-size: 16px;
-        font-weight: 600;
-        border-radius: 12px;
-        border: none;
-        background: var(--accent-color);
-        color: white;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        box-shadow: var(--glow);
-    }
+        .check-tag {
+            display: inline-flex;
+            margin-top: 25px;
+            padding: 8px 18px;
+            border-radius: 100px;
+            background: rgba(112, 83, 255, 0.1);
+            border: 1px solid rgba(112, 83, 255, 0.2);
+            color: #7053ff;
+            font-size: 0.9rem;
+        }
 
-    button:hover {
-        background: var(--accent-hover);
-        transform: translateY(-2px);
-        box-shadow: 0 0 30px rgba(59, 130, 246, 0.7);
-    }
+        /* 4. FOOTER & VERIFIED CONTENT */
+        .footer-section {
+            text-align: center;
+            max-width: 650px;
+        }
 
-    /* Verification Badge */
-    .badge {
-        display: inline-block;
-        margin-top: 20px;
-        padding: 6px 12px;
-        font-size: 12px;
-        color: #60a5fa;
-        background: rgba(59, 130, 246, 0.1);
-        border-radius: 20px;
-        border: 1px solid rgba(59, 130, 246, 0.2);
-    }
+        .about-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
 
-    /* Answer Area */
-    .answer-box {
-        margin-top: 30px;
-        text-align: left;
-        background: rgba(30, 41, 59, 0.4);
-        padding: 25px;
-        border-radius: 16px;
-        border: 1px solid rgba(255, 255, 255, 0.05);
-        display: none; /* Hidden by default */
-        animation: fadeIn 0.5s ease-in-out;
-        color: #e2e8f0;
-        line-height: 1.6;
-    }
+        .about-text {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 1rem;
+            line-height: 1.6;
+            margin-bottom: 40px;
+        }
 
-    @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(10px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
+        .disclaimer-container {
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            padding-top: 25px;
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.35);
+            line-height: 1.5;
+            text-align: justify;
+        }
 
-    .answer-box strong {
-        color: #fff;
-    }
-
-    .answer-box h3 {
-        color: var(--accent-color);
-        margin-top: 0;
-    }
-
-    /* Related Questions */
-    #related {
-        margin-top: 20px;
-        text-align: left;
-    }
-
-    .related-item {
-        background: rgba(255, 255, 255, 0.03);
-        padding: 12px 16px;
-        margin-top: 8px;
-        border-radius: 8px;
-        cursor: pointer;
-        color: var(--text-secondary);
-        transition: all 0.2s;
-        border: 1px solid transparent;
-        font-size: 14px;
-    }
-
-    .related-item:hover {
-        background: rgba(255, 255, 255, 0.07);
-        color: white;
-        border-color: rgba(255, 255, 255, 0.1);
-    }
-
-    .about-section {
-        margin-top: 40px;
-        font-size: 13px;
-        color: #94a3b8;
-        line-height: 1.5;
-        border-top: 1px solid rgba(255,255,255,0.1);
-        padding-top: 20px;
-    }
-
-    .footer {
-        margin-top: 30px;
-        margin-bottom: 40px;
-        font-size: 12px;
-        color: #64748b;
-        text-align: center;
-        line-height: 1.5;
-        max-width: 600px;
-    }
-
-    /* Mobile tweaks */
-    @media (max-width: 600px) {
-        .container { margin-top: 40px; }
-        h1 { font-size: 2rem; }
-    }
-</style>
+        @media (max-width: 640px) {
+            h1 { font-size: 2.2rem; }
+            .glass-card { padding: 25px; }
+        }
+    </style>
 </head>
-
 <body>
 
-    <div class="container">
+    <div class="logo-container">
         <h1>🇮🇳 RuleMate India</h1>
-        <div class="subtitle">
-            Government rules made easy. Just ask.
-        </div>
+    </div>
+    <p class="hero-subtitle">Government rules made easy. Just ask.</p>
 
-        <div class="search-box">
-            <input id="q" placeholder="Example: What are the latest traffic rules in India?" />
-            <button onclick="ask()">Ask</button>
-        </div>
+    <div class="glass-card">
+        <input type="text" class="search-input" placeholder="Example: What are the latest traffic rules in India?">
+        
+        <button class="btn-ask">Ask</button>
 
-        <div class="badge">
-            ✔ Clarifying Indian regulations through an educational lens.
-        </div>
-
-        <div class="answer-box" id="a"></div>
-        <div id="related"></div>
-
-        <div class="about-section">
-            <b style="color: #cbd5e1;">About RuleMate India</b><br>
-            RuleMate India helps people understand Indian government rules, laws,
-            fines and procedures in simple language.
+        <div style="text-align: center;">
+            <div class="check-tag">
+                ✓ Clarifying Indian regulations through an educational lens.
+            </div>
         </div>
     </div>
 
-    <div class="footer">
-        <b>Disclaimer:</b><br>
-        This website provides general information on Indian government rules and laws
+    <div class="footer-section">
+        <div class="about-title">About RuleMate India</div>
+        <p class="about-text">
+            RuleMate India helps people understand Indian government rules, laws,
+            fines and procedures in simple language.        
+        </p>
+        
+        <div class="disclaimer-container">
+            <strong>Disclaimer:</strong> This website provides general information on Indian government rules and laws
         for educational purposes only. It is not legal advice.
         Laws and rules may change. Always verify with official government notifications
         or consult a qualified professional.
+        </div>
     </div>
 
-<script>
-    function setQuestion(text) {
-        document.getElementById("q").value = text;
-        ask();
-    }
-
-    async function ask() {
-        const q = document.getElementById("q").value;
-        if (!q) return; 
-        
-        const answerBox = document.getElementById("a");
-        const relatedBox = document.getElementById("related");
-        const btn = document.querySelector("button");
-
-        // UI Loading State
-        btn.innerText = "Thinking...";
-        btn.style.opacity = "0.7";
-        answerBox.style.display = "block";
-        answerBox.innerHTML = "<div style='color:#94a3b8'>Thinking...</div>";
-        relatedBox.innerHTML = "";
-
-        try {
-            const r = await fetch("/ask", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ question: q })
-            });
-
-            const d = await r.json();
-            
-            // Render Answer
-            answerBox.innerHTML = d.answer.replace(/\\n/g, "<br>");
-            
-            // Render Related Questions
-            let html = "";
-            if(d.related.length > 0) {
-                html += "<div style='margin-top:20px; color:#64748b; font-size:13px; font-weight:600; text-transform:uppercase; letter-spacing:1px;'>Related Questions</div>";
-                d.related.forEach(r => {
-                    if (r.trim() !== "") {
-                        const safe = r.replace(/'/g, "");
-                        html += `<div class="related-item" onclick="setQuestion('${safe}')">• ${r}</div>`;
-                    }
-                });
-            }
-            relatedBox.innerHTML = html;
-
-            // Update URL
-            const url = "/" + d.slug;
-            window.history.pushState({}, "", url);
-
-        } catch (error) {
-            answerBox.innerText = "Error fetching answer. Please try again.";
-        } finally {
-            btn.innerText = "Ask";
-            btn.style.opacity = "1";
-        }
-    }
-</script>
 </body>
 </html>
 """
@@ -420,4 +296,5 @@ def home():
 @app.get("/{slug}", response_class=HTMLResponse)
 def dynamic_page(slug: str):
     return home()
+
 
