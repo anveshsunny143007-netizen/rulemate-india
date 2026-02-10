@@ -116,7 +116,7 @@ def home():
 <!DOCTYPE html>
 <html>
 <head>
-<title>RuleMate India | AI Government Rules Assistant</title>
+<title>Indian Government Rules Explained Simply | RuleMate India</title>
 <meta name="description" content="Ask Indian government rules, IPC sections, fines, punishments and legal procedures in simple language. Trusted rule explainer for India.">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
@@ -157,7 +157,7 @@ def home():
     .container {
         width: 100%;
         max-width: 700px;
-        margin-top: 80px;
+        margin-top: 60px;
         padding: 20px;
         box-sizing: border-box;
         text-align: center;
@@ -183,7 +183,7 @@ def home():
     .search-box {
         position: relative;
         background: rgba(30, 41, 59, 0.6);
-        padding: 10px;
+        padding: 15px;
         border-radius: 16px;
         border: 1px solid rgba(255, 255, 255, 0.1);
         backdrop-filter: blur(10px);
@@ -250,6 +250,8 @@ def home():
         border: 1px solid rgba(255, 255, 255, 0.05);
         display: none; /* Hidden by default */
         animation: fadeIn 0.5s ease-in-out;
+        color: #e2e8f0;
+        line-height: 1.6;
     }
 
     @keyframes fadeIn {
@@ -290,14 +292,23 @@ def home():
         border-color: rgba(255, 255, 255, 0.1);
     }
 
+    .about-section {
+        margin-top: 40px;
+        font-size: 13px;
+        color: #94a3b8;
+        line-height: 1.5;
+        border-top: 1px solid rgba(255,255,255,0.1);
+        padding-top: 20px;
+    }
+
     .footer {
-        margin-top: auto;
-        padding: 40px 20px;
+        margin-top: 30px;
+        margin-bottom: 40px;
         font-size: 12px;
-        color: #475569;
+        color: #64748b;
         text-align: center;
         line-height: 1.5;
-        max-width: 500px;
+        max-width: 600px;
     }
 
     /* Mobile tweaks */
@@ -312,23 +323,35 @@ def home():
 
     <div class="container">
         <h1>🇮🇳 RuleMate India</h1>
-        <div class="subtitle">Ask any Indian government rule in simple language.</div>
-
-        <div class="search-box">
-            <input id="q" placeholder="Type your question here... (e.g. Traffic fine for no helmet)" />
-            <button onclick="ask()">Ask AI</button>
+        <div class="subtitle">
+            Government rules made easy. Just ask.
         </div>
 
-        <div class="badge">✔ Verified Government Sources</div>
+        <div class="search-box">
+            <input id="q" placeholder="Example: Traffic fine for no helmet in Telangana" />
+            <button onclick="ask()">Ask</button>
+        </div>
+
+        <div class="badge">
+            ✔ Verified Government Rule Explanation
+        </div>
 
         <div class="answer-box" id="a"></div>
         <div id="related"></div>
+
+        <div class="about-section">
+            <b style="color: #cbd5e1;">About RuleMate India</b><br>
+            RuleMate India helps people understand Indian government rules, laws,
+            fines and procedures in simple language.
+        </div>
     </div>
 
     <div class="footer">
         <b>Disclaimer:</b><br>
-        RuleMate India provides general information for educational purposes only. 
-        It is not legal advice. Always verify with official government notifications.
+        This website provides general information on Indian government rules and laws
+        for educational purposes only. It is not legal advice.
+        Laws and rules may change. Always verify with official government notifications
+        or consult a qualified professional.
     </div>
 
 <script>
@@ -346,7 +369,7 @@ def home():
         const btn = document.querySelector("button");
 
         // UI Loading State
-        btn.innerText = "Searching...";
+        btn.innerText = "Thinking...";
         btn.style.opacity = "0.7";
         answerBox.style.display = "block";
         answerBox.innerHTML = "<div style='color:#94a3b8'>Thinking...</div>";
@@ -371,7 +394,7 @@ def home():
                 d.related.forEach(r => {
                     if (r.trim() !== "") {
                         const safe = r.replace(/'/g, "");
-                        html += `<div class="related-item" onclick="setQuestion('${safe}')">${r}</div>`;
+                        html += `<div class="related-item" onclick="setQuestion('${safe}')">• ${r}</div>`;
                     }
                 });
             }
@@ -384,7 +407,7 @@ def home():
         } catch (error) {
             answerBox.innerText = "Error fetching answer. Please try again.";
         } finally {
-            btn.innerText = "Ask AI";
+            btn.innerText = "Ask";
             btn.style.opacity = "1";
         }
     }
