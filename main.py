@@ -120,7 +120,7 @@ def home():
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RuleMate India</title>
     <style>
-        /* 1. BACKGROUND & LAYOUT (AISongCreator Style) */
+        /* 1. VISUAL STYLES (MATCHING IMAGES 1 & 2) */
         body {
             margin: 0;
             padding: 0;
@@ -128,7 +128,6 @@ def home():
             display: flex;
             flex-direction: column;
             align-items: center;
-            /* Radial glow from the top center */
             background: radial-gradient(circle at 50% -10%, #1a1b3a 0%, #030414 70%);
             background-color: #030414;
             color: #ffffff;
@@ -136,7 +135,6 @@ def home():
             padding: 60px 20px;
         }
 
-        /* 2. HEADER & LOGO */
         .logo-container {
             display: flex;
             align-items: center;
@@ -145,7 +143,7 @@ def home():
             margin-bottom: 10px;
         }
 
-     
+        .flag-emoji { font-size: 2.5rem; line-height: 1; }
 
         h1 {
             font-size: 3.5rem;
@@ -161,7 +159,6 @@ def home():
             text-align: center;
         }
 
-        /* 3. THE GLASS CARD (Semi-transparent with blur) */
         .glass-card {
             background: rgba(25, 25, 31, 0.6);
             backdrop-filter: blur(15px);
@@ -176,7 +173,7 @@ def home():
             box-sizing: border-box;
         }
 
-        .search-input {
+        #userInput {
             width: 100%;
             background: rgba(0, 0, 0, 0.3);
             border: 1px solid rgba(255, 255, 255, 0.1);
@@ -189,7 +186,6 @@ def home():
             outline: none;
         }
 
-        /* THE SPECIFIC PURPLE BUTTON */
         .btn-ask {
             width: 100%;
             background: #7053ff;
@@ -220,23 +216,24 @@ def home():
             font-size: 0.9rem;
         }
 
-        /* 4. FOOTER & VERIFIED CONTENT */
-        .footer-section {
-            text-align: center;
-            max-width: 650px;
-        }
+        .footer-section { text-align: center; max-width: 650px; }
 
+        /* Style for your functional "About" clicker */
         .about-title {
             font-size: 1.1rem;
             font-weight: 700;
             margin-bottom: 12px;
+            cursor: pointer;
+            text-decoration: underline;
+            text-underline-offset: 4px;
         }
 
-        .about-text {
+        #aboutContent {
             color: rgba(255, 255, 255, 0.5);
             font-size: 1rem;
             line-height: 1.6;
             margin-bottom: 40px;
+            display: none; /* Hidden by default as per your original logic */
         }
 
         .disclaimer-container {
@@ -262,9 +259,9 @@ def home():
     <p class="hero-subtitle">Government rules made easy. Just ask.</p>
 
     <div class="glass-card">
-        <input type="text" class="search-input" placeholder="Example: What are the latest traffic rules in India?">
+        <input type="text" id="userInput" placeholder="Example: What are the latest traffic rules in India?">
         
-        <button class="btn-ask">Ask</button>
+        <button class="btn-ask" onclick="handleAsk()">Ask</button>
 
         <div style="text-align: center;">
             <div class="check-tag">
@@ -274,19 +271,41 @@ def home():
     </div>
 
     <div class="footer-section">
-        <div class="about-title">About RuleMate India</div>
-        <p class="about-text">
-            RuleMate India helps people understand Indian government rules, laws,
-            fines and procedures in simple language.        
+        <div class="about-title" onclick="toggleAbout()">About RuleMate India</div>
+        <p id="aboutContent">
+            RuleMate India helps people understand Indian government rules, laws, fines and procedures in simple language.
         </p>
         
         <div class="disclaimer-container">
             <strong>Disclaimer:</strong> This website provides general information on Indian government rules and laws
-        for educational purposes only. It is not legal advice.
-        Laws and rules may change. Always verify with official government notifications
-        or consult a qualified professional.
+for educational purposes only. It is not legal advice.
+Laws and rules may change. Always verify with official government notifications
+or consult a qualified professional.
+
         </div>
     </div>
+
+    <script>
+        function handleAsk() {
+            const query = document.getElementById('userInput').value;
+            if (query.trim() === "") {
+                alert("Please enter a question!");
+                return;
+            }
+            // Your original search logic (e.g., redirecting to search or AI)
+            console.log("Searching for:", query);
+            window.location.href = "https://www.google.com/search?q=site:india.gov.in " + encodeURIComponent(query);
+        }
+
+        function toggleAbout() {
+            const content = document.getElementById('aboutContent');
+            if (content.style.display === "none" || content.style.display === "") {
+                content.style.display = "block";
+            } else {
+                content.style.display = "none";
+            }
+        }
+    </script>
 
 </body>
 </html>
@@ -296,5 +315,6 @@ def home():
 @app.get("/{slug}", response_class=HTMLResponse)
 def dynamic_page(slug: str):
     return home()
+
 
 
