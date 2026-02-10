@@ -68,209 +68,215 @@ class Question(BaseModel):
 @app.get("/", response_class=HTMLResponse)
 def home():
     return """
+return f"""
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Indian Government Rules Explained Simply | RuleMate India</title>
-    <meta name="description" content="Ask Indian government rules, IPC sections, fines, punishments and legal procedures in simple language. Trusted rule explainer for India.">
+<meta charset="UTF-8">
+<title>{title}</title>
 
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Understand Indian government rules, laws, fines and procedures in simple language. RuleMate India explains IPC, traffic rules and legal procedures clearly.">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <style>
-        <style>
-    :root {
-        --primary: #2563eb;
-        --bg: #f8fafc;
-        --card: #ffffff;
-        --text: #0f172a;
-        --muted: #475569;
-    }
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
-    * {
-        box-sizing: border-box;
-    }
+<style>
+* {{
+    box-sizing: border-box;
+    font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont;
+}}
 
-    body {
-        margin: 0;
-        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto;
-        background: linear-gradient(180deg, #f1f5f9, #ffffff);
-        color: var(--text);
-    }
+body {{
+    margin: 0;
+    background: radial-gradient(circle at top, #eef2ff, #f8fafc);
+    color: #0f172a;
+}}
 
-    .container {
-        max-width: 720px;
-        margin: 70px auto;
-        background: var(--card);
-        padding: 36px;
-        border-radius: 18px;
-        box-shadow: 0 25px 60px rgba(0,0,0,0.08);
-    }
+.hero {{
+    max-width: 900px;
+    margin: 80px auto;
+    padding: 50px;
+    background: rgba(255,255,255,0.75);
+    backdrop-filter: blur(14px);
+    border-radius: 28px;
+    box-shadow: 0 30px 80px rgba(0,0,0,0.12);
+    text-align: center;
+}}
 
-    h1 {
-        text-align: center;
-        margin-bottom: 6px;
-        font-size: 32px;
-        letter-spacing: -0.5px;
-    }
+.hero h1 {{
+    font-size: 44px;
+    font-weight: 800;
+    margin-bottom: 10px;
+}}
 
-    .subtitle {
-        text-align: center;
-        color: var(--muted);
-        margin-bottom: 30px;
-        font-size: 15px;
-    }
+.hero p {{
+    font-size: 18px;
+    color: #475569;
+    margin-bottom: 35px;
+}}
 
-    input {
-        width: 100%;
-        padding: 16px;
-        font-size: 16px;
-        border-radius: 10px;
-        border: 1px solid #cbd5f5;
-        outline: none;
-    }
+.search-box {{
+    display: flex;
+    gap: 12px;
+    margin-bottom: 18px;
+}}
 
-    input:focus {
-        border-color: var(--primary);
-        box-shadow: 0 0 0 3px rgba(37,99,235,0.15);
-    }
+.search-box input {{
+    flex: 1;
+    padding: 18px;
+    font-size: 16px;
+    border-radius: 14px;
+    border: 1px solid #c7d2fe;
+    outline: none;
+}}
 
-    button {
-        width: 100%;
-        padding: 15px;
-        margin-top: 14px;
-        font-size: 16px;
-        border-radius: 10px;
-        border: none;
-        background: linear-gradient(135deg, #2563eb, #1d4ed8);
-        color: white;
-        cursor: pointer;
-        font-weight: 600;
-    }
+.search-box button {{
+    padding: 18px 28px;
+    border-radius: 14px;
+    border: none;
+    background: linear-gradient(135deg, #2563eb, #1e40af);
+    color: white;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+}}
 
-    button:hover {
-        opacity: 0.95;
-    }
+.search-box button:hover {{
+    transform: translateY(-1px);
+}}
 
-    .trust {
-        margin-top: 14px;
-        font-size: 13px;
-        color: #2563eb;
-        text-align: center;
-        font-weight: 500;
-    }
+.trust {{
+    margin-top: 10px;
+    font-size: 14px;
+    color: #2563eb;
+    font-weight: 500;
+}}
 
-    .answer-box {
-        margin-top: 30px;
-        padding: 24px;
-        background: #f9fafb;
-        border-radius: 14px;
-        border-left: 5px solid var(--primary);
-        white-space: pre-wrap;
-        font-size: 15px;
-        line-height: 1.7;
-    }
+.answer-box {{
+    margin-top: 30px;
+    padding: 28px;
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.08);
+    border-left: 6px solid #2563eb;
+    white-space: pre-wrap;
+    line-height: 1.7;
+    text-align: left;
+}}
 
-    .answer-box strong {
-        color: #020617;
-    }
+.section {{
+    max-width: 900px;
+    margin: 60px auto;
+    padding: 0 20px;
+}}
 
-    #related {
-        margin-top: 20px;
-        font-size: 14px;
-    }
+.cards {{
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 20px;
+}}
 
-    .footer {
-        margin-top: 40px;
-        font-size: 12px;
-        color: #64748b;
-        text-align: center;
-        line-height: 1.6;
-    }
+.card {{
+    background: white;
+    padding: 24px;
+    border-radius: 20px;
+    box-shadow: 0 15px 40px rgba(0,0,0,0.08);
+}}
 
-    @media (max-width: 640px) {
-        .container {
-            margin: 30px 14px;
-            padding: 24px;
-        }
-    }
+.card h3 {{
+    margin-top: 0;
+    font-size: 18px;
+}}
+
+.footer {{
+    max-width: 900px;
+    margin: 60px auto 40px;
+    font-size: 13px;
+    color: #475569;
+    text-align: center;
+}}
 </style>
-
 </head>
 
 <body>
-<div class="container">
+
+<div class="hero">
     <h1>🇮🇳 RuleMate India</h1>
-    <div class="subtitle">
-        Simple explanations of Indian government rules, laws, fines and procedures
+    <p>Simple explanations of Indian government rules, laws, fines and procedures</p>
+
+    <div class="search-box">
+        <input id="q" placeholder="Example: Traffic fine for no helmet in Telangana">
+        <button onclick="ask()">Ask</button>
     </div>
 
-    <input id="q" placeholder="Example: Traffic fine for no helmet in Telangana" />
-    <button onclick="ask()">Ask</button>
+    <div class="trust">✔ Educational explanation based on Indian government laws</div>
 
-    <div class="trust">
-    ✔ Educational explanation based on Indian government laws
+    <div id="a" class="answer-box" style="display:none;"></div>
+    <div id="related" style="margin-top:20px;"></div>
 </div>
 
-
-<div class="answer-box" id="a"></div>
-<div id="related" style="margin-top:18px;font-size:14px;"></div>
-
-    <div style="margin-top:30px;font-size:13px;color:#555;">
-    <b>About RuleMate India</b><br>
-    RuleMate India helps people understand Indian government rules, laws,
-    fines and procedures in simple language.
+<div class="section">
+    <h2>Why RuleMate India?</h2>
+    <div class="cards">
+        <div class="card">
+            <h3>🚦 Traffic Rules</h3>
+            <p>Understand fines, penalties and driving rules clearly.</p>
+        </div>
+        <div class="card">
+            <h3>⚖ IPC & Laws</h3>
+            <p>Simple breakdown of Indian Penal Code sections.</p>
+        </div>
+        <div class="card">
+            <h3>📄 Legal Procedures</h3>
+            <p>Know what to do and how government processes work.</p>
+        </div>
+    </div>
 </div>
 
-    <div class="footer">
-    <b>Disclaimer:</b><br>
-    This website provides general information on Indian government rules and laws
-    for educational purposes only. It is not legal advice.
-    Laws and rules may change. Always verify with official government notifications
-    or consult a qualified professional.
+<div class="footer">
+<b>Disclaimer:</b><br>
+This website provides general information on Indian government rules and laws for educational purposes only.
+It is not legal advice. Laws may change. Always verify with official government notifications.
 </div>
-
 
 <script>
-function setQuestion(text) {
+function setQuestion(text) {{
     document.getElementById("q").value = text;
     ask();
-}
+}}
 
-async function ask() {
+async function ask() {{
     const q = document.getElementById("q").value;
-    document.getElementById("a").innerText = "Thinking...";
-    document.getElementById("related").innerHTML = "";
+    const box = document.getElementById("a");
+    box.style.display = "block";
+    box.innerText = "Thinking...";
 
-    const r = await fetch("/ask", {
+    const r = await fetch("/ask", {{
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ question: q })
-    });
+        headers: {{ "Content-Type": "application/json" }},
+        body: JSON.stringify({{ question: q }})
+    }});
 
     const d = await r.json();
-    document.getElementById("a").innerText = d.answer;
-    let html = "<b>🔍 Related questions</b><br>";
-d.related.forEach(r => {
-    if (r.trim() !== "") {
-        const safe = r.replace(/'/g, "");
-        html += `<div style="margin-top:6px; cursor:pointer; color:#2563eb;" onclick="setQuestion('${safe}')">• ${r}</div>`;
-    }
-});
-document.getElementById("related").innerHTML = html;
+    box.innerText = d.answer;
 
-const url = "/" + d.slug;
-window.history.pushState({}, "", url);
+    let html = "<b>Related questions</b><br>";
+    d.related.forEach(r => {{
+        if (r.trim() !== "") {{
+            const safe = r.replace(/'/g, "");
+            html += `<div style="margin-top:8px;color:#2563eb;cursor:pointer" onclick="setQuestion('${safe}')">• ${r}</div>`;
+        }}
+    }});
+    document.getElementById("related").innerHTML = html;
 
-
-    
-}
-
-
+    window.history.pushState({{}}, "", "/" + d.slug);
+}}
 </script>
+
 </body>
 </html>
-
 """
+
 @app.get("/{slug}", response_class=HTMLResponse)
 def dynamic_page(slug: str):
     return home()
@@ -346,6 +352,7 @@ def sitemap():
 </urlset>
 """
     return Response(content=xml, media_type="application/xml")
+
 
 
 
