@@ -55,7 +55,7 @@ def ask_rule(q: Question):
     answer = response.choices[0].message.content
     slug = slugify(q.question)
     
-    # Updated Related Questions Prompt to ensure exactly 4
+    # Related Questions Prompt to ensure exactly 4
     related_response = client.chat.completions.create(
         model="gpt-4o-mini",
         messages=[
@@ -64,10 +64,8 @@ def ask_rule(q: Question):
         ],
         temperature=0.5
     )
-    # Split and clean to ensure we only have non-empty strings
-    related = [r.strip("- ").strip() for r in related_response.choices[0].message.content.split("\n") if r.strip()]
     
-    # Hard enforcement: if AI fails to give 4, we pad or slice to keep the UI consistent
+    related = [r.strip("- ").strip() for r in related_response.choices[0].message.content.split("\n") if r.strip()]
     related = related[:4] 
 
     return {"answer": answer, "slug": slug, "related": related}
@@ -95,39 +93,82 @@ def home():
         h1 { font-size: 2.8rem; font-weight: 800; margin: 0; letter-spacing: -0.04em; }
         .hero-subtitle { color: rgba(255, 255, 255, 0.6); font-size: 1.1rem; margin-bottom: 35px; text-align: center; }
         
+        /* 3D METALLIC GLASS CARD */
         .glass-card {
-            background: rgba(25, 25, 31, 0.6); backdrop-filter: blur(15px);
-            border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 24px;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.03) 100%);
+            background-image: radial-gradient(at 0% 0%, rgba(255,255,255,0.15) 0%, transparent 50%);
+            backdrop-filter: blur(20px);
+            border-top: 1px solid rgba(255, 255, 255, 0.4);
+            border-left: 1px solid rgba(255, 255, 255, 0.2);
+            border-bottom: 3px solid rgba(0, 0, 0, 0.5);
+            border-right: 2px solid rgba(0, 0, 0, 0.4);
+            border-radius: 24px;
             padding: 40px; width: 100%; max-width: 720px;
-            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.6); margin-bottom: 50px; box-sizing: border-box;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255,255,255,0.1);
+            margin-bottom: 50px; box-sizing: border-box;
         }
+
+        /* SUNKEN INPUT */
         #userInput {
-            width: 100%; background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255, 255, 255, 0.1);
+            width: 100%; background: rgba(0, 0, 0, 0.4); border: 1px solid rgba(255, 255, 255, 0.05);
             border-radius: 12px; padding: 20px; color: white; font-size: 1rem;
             margin-bottom: 20px; box-sizing: border-box; outline: none;
+            box-shadow: inset 0 4px 10px rgba(0,0,0,0.7);
         }
+
+        /* 3D GLOSSY BUTTON */
         .btn-ask {
-            width: 100%; background: #7053ff; color: white; border: none;
+            width: 100%; 
+            background: linear-gradient(to bottom, #8e78ff 0%, #7053ff 45%, #5a3fff 50%, #4a2fe0 100%);
+            color: white; border: none;
             padding: 18px; border-radius: 12px; font-size: 1.1rem; font-weight: 700;
-            cursor: pointer; transition: 0.2s;
+            cursor: pointer; position: relative;
+            border-top: 1px solid rgba(255,255,255,0.4);
+            border-bottom: 5px solid #2d1b9e;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+            transition: all 0.1s;
         }
-        .btn-ask:hover { background: #5a3fff; transform: translateY(-1px); }
+        .btn-ask:hover { filter: brightness(1.1); }
+        .btn-ask:active {
+            transform: translateY(3px);
+            border-bottom: 2px solid #2d1b9e;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+        }
         
+        /* PULSE ANIMATION */
+        @keyframes pulse-fade {
+            0% { opacity: 0.3; }
+            50% { opacity: 0.6; }
+            100% { opacity: 0.3; }
+        }
+        .loading-pulse {
+            animation: pulse-fade 1.5s infinite ease-in-out;
+            color: rgba(255, 255, 255, 0.4);
+            font-style: italic; text-align: center; padding: 20px;
+        }
+
+        #resultArea { margin-top: 30px; display: none; text-align: left; }
+        .answer-box { 
+            background: rgba(0, 0, 0, 0.2); border: 1px solid rgba(255,255,255,0.05); 
+            border-radius: 15px; padding: 25px; white-space: pre-wrap; line-height: 1.6;
+            box-shadow: inset 0 2px 10px rgba(0,0,0,0.5);
+            transition: opacity 0.4s ease-in-out;
+            opacity: 1;
+        }
+        
+        .related-title { margin-top: 25px; font-weight: 700; color: #7053ff; }
+        .related-q { 
+            display: block; background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255,255,255,0.05);
+            padding: 12px 15px; border-radius: 10px; margin-top: 10px;
+            cursor: pointer; font-size: 0.9rem; transition: 0.2s; color: rgba(255,255,255,0.8);
+        }
+        .related-q:hover { background: rgba(255, 255, 255, 0.08); color: white; }
+
         .check-tag {
             display: inline-flex; margin-top: 25px; padding: 8px 18px;
             border-radius: 100px; background: rgba(112, 83, 255, 0.1);
             border: 1px solid rgba(112, 83, 255, 0.2); color: #7053ff; font-size: 0.85rem;
         }
-
-        #resultArea { margin-top: 30px; display: none; text-align: left; }
-        .answer-box { background: rgba(255, 255, 255, 0.05); border-radius: 15px; padding: 25px; white-space: pre-wrap; line-height: 1.6; }
-        .related-title { margin-top: 25px; font-weight: 700; color: #7053ff; }
-        .related-q { 
-            display: block; background: rgba(112, 83, 255, 0.1); 
-            padding: 12px 15px; border-radius: 8px; margin-top: 10px;
-            cursor: pointer; font-size: 0.9rem; transition: 0.2s;
-        }
-        .related-q:hover { background: rgba(112, 83, 255, 0.2); }
 
         .footer-section { text-align: center; max-width: 650px; margin-top: auto; }
         .about-title { font-size: 1rem; font-weight: 700; margin-bottom: 10px; color: #fff; }
@@ -136,8 +177,6 @@ def home():
             border-top: 1px solid rgba(255, 255, 255, 0.08); padding-top: 25px;
             font-size: 0.8rem; color: rgba(255, 255, 255, 0.3); text-align: justify;
         }
-
-        @media (max-width: 640px) { h1 { font-size: 2.2rem; } .glass-card { padding: 25px; } }
     </style>
 </head>
 <body>
@@ -158,9 +197,7 @@ def home():
         </div>
 
         <div style="text-align: center;">
-            <div class="check-tag">
-                ✓ Clarifying Indian regulations through an educational lens.
-            </div>
+            <div class="check-tag">✓ Clarifying Indian regulations through an educational lens.</div>
         </div>
     </div>
 
@@ -168,7 +205,7 @@ def home():
         <div class="about-title">About RuleMate India</div>
         <p class="about-text">RuleMate India helps people understand Indian government rules, laws, fines and procedures in simple language.</p>
         <div class="disclaimer-container">
-            <strong>Disclaimer:</strong> This website provides general information on Indian government rules and laws for educational purposes only. It is not legal advice. Laws and rules may change. Always verify with official government notifications or consult a qualified professional.
+            <strong>Disclaimer:</strong> This website provides general information for educational purposes only. It is not legal advice. Always verify with official sources.
         </div>
     </div>
 
@@ -185,6 +222,15 @@ def home():
             btn.disabled = true;
             btn.innerText = "Processing...";
             
+            // Step 1: Fade out the current answer box
+            aiAnswer.style.opacity = "0";
+            
+            setTimeout(() => {
+                aiAnswer.innerHTML = '<div class="loading-pulse">Consulting Indian Regulations...</div>';
+                aiAnswer.style.opacity = "1";
+                resultArea.style.display = "block";
+            }, 400);
+            
             try {
                 const response = await fetch('/ask', {
                     method: 'POST',
@@ -192,25 +238,33 @@ def home():
                     body: JSON.stringify({ question: queryInput.value })
                 });
                 const data = await response.json();
-                aiAnswer.innerText = data.answer;
-                relatedBox.innerHTML = "";
                 
-                data.related.forEach(q => {
-                    const div = document.createElement('div');
-                    div.className = 'related-q';
-                    div.innerText = q;
-                    div.onclick = () => { 
-                        // Strip serial numbers like "1. ", "2) ", etc.
+                // Step 2: Fade out the loader
+                aiAnswer.style.opacity = "0";
+                
+                setTimeout(() => {
+                    // Step 3: Insert new answer and fade in
+                    aiAnswer.innerText = data.answer;
+                    aiAnswer.style.opacity = "1";
+                    
+                    relatedBox.innerHTML = "";
+                    data.related.forEach(q => {
+                        const div = document.createElement('div');
+                        div.className = 'related-q';
+                        // Strip serial numbers/bullets from strings
                         let cleanQ = q.replace(/^\d+[\.\)\s]+/, '');
-                        queryInput.value = cleanQ; 
-                        handleAsk(); 
-                        window.scrollTo({ top: 0, behavior: 'smooth' }); 
-                    };
-                    relatedBox.appendChild(div);
-                });
-                resultArea.style.display = "block";
+                        div.innerText = cleanQ;
+                        div.onclick = () => { 
+                            queryInput.value = cleanQ; 
+                            handleAsk(); 
+                            window.scrollTo({ top: 0, behavior: 'smooth' }); 
+                        };
+                        relatedBox.appendChild(div);
+                    });
+                }, 400);
             } catch (err) {
-                alert("Error fetching answer.");
+                aiAnswer.innerText = "Error fetching answer.";
+                aiAnswer.style.opacity = "1";
             } finally {
                 btn.disabled = false;
                 btn.innerText = "Ask";
