@@ -209,21 +209,28 @@ def home():
         <span class="flag-emoji">🇮🇳</span>
         <h1>RuleMate India</h1>
     </div>
-    <p class="hero-subtitle">Indian laws and government rules, made simple.</p>
+    <p class="hero-subtitle">Indian laws and government rules made easy. Just ask</p>
 
     <div class="glass-card">
-        <input type="text" id="userInput" placeholder="e.g. Traffic fines for no helmet?">
+        <input type="text" id="userInput" placeholder="e.g. What are the latest traffic rules in India?">
         <button id="askBtn" class="btn-ask" onclick="handleAsk()">Ask RuleMate</button>
 
         <div id="resultArea" style="display:none;">
             <div class="answer-box" id="aiAnswer"></div>
             <div style="margin-top:25px; color:#6352c7; font-weight:bold;">Related Questions:</div>
             <div id="relatedQuestions"></div>
+
+        <div style="text-align: center;">
+            <div class="check-tag">✓ Clarifying Indian regulations through an educational lens.</div>
         </div>
     </div>
 
     <div class="footer-section">
-        <p>Disclaimer: Educational information only. Not legal advice. Always check official Gazettes.</p>
+        <div class="about-title">About RuleMate India</div>
+        <p class="about-text">RuleMate India helps people understand Indian government rules, laws, fines and procedures in simple language.</p>
+        <div class="disclaimer-container">
+            <strong>Disclaimer:</strong> This website provides general information on Indian government rules and laws for educational purposes only. It is not legal advice. Laws and rules may change. Always verify with official government notifications or consult a qualified professional. 
+        </div>
     </div>
 
     <script>
@@ -316,3 +323,4 @@ def dynamic_page(slug: str):
 </body>
 </html>
 """
+
