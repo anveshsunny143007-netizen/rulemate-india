@@ -10,12 +10,14 @@ from openai import OpenAI
 
 # 1. Configuration & Setup
 load_dotenv()
+# Note: Ensure OPENAI_API_KEY is set in Render Environment Variables
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 app = FastAPI()
 
 # ---------------- DATABASE SETUP ----------------
 
 def get_db():
+    # Use an absolute path if necessary for production
     conn = sqlite3.connect("rulemate.db", check_same_thread=False)
     return conn
 
@@ -125,9 +127,9 @@ def ask_rule(q: QuestionRequest):
 
     return {"answer": answer, "slug": slug, "related": related}
 
-# ---------------- UI TEMPLATES ----------------
-
-SHARED_STYLE = """
+# ---------------- UI STYLES ----------------
+# We separate the CSS to avoid f-string confusion
+CSS_STYLE = """
 <style>
     body {
         margin: 0; padding: 0; min-height: 100vh;
@@ -193,13 +195,14 @@ SHARED_STYLE = """
 
 @app.get("/", response_class=HTMLResponse)
 def home():
+    # Note the double curly braces {{ }} inside the script section!
     return f"""
 <!DOCTYPE html>
 <html>
 <head>
     <title>RuleMate India | Gov Rules Simplified</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    {SHARED_STYLE}
+    {CSS_STYLE}
 </head>
 <body>
     <div class="logo-container" onclick="window.location='/'">
@@ -224,7 +227,7 @@ def home():
     </div>
 
     <script>
-        async function handleAsk() {
+        async function handleAsk() {{
             const input = document.getElementById('userInput');
             const btn = document.getElementById('askBtn');
             const resultArea = document.getElementById('resultArea');
@@ -234,9 +237,9 @@ def home():
             if(!input.value.trim()) return;
 
             btn.disabled = true;
-            btn.innerText = "Consulting Legal Records...";
+            btn.innerText = "Consulting Records...";
             resultArea.style.display = "block";
-            aiAnswer.innerHTML = '<div class="loading-pulse">Analyzing Indian Constitution & Acts...</div>';
+            aiAnswer.innerHTML = '<div class="loading-pulse">Analyzing Indian Acts...</div>';
 
             try {{
                 const res = await fetch('/ask', {{
@@ -263,7 +266,7 @@ def home():
                 btn.disabled = false;
                 btn.innerText = "Ask RuleMate";
             }}
-        }
+        }}
     </script>
 </body>
 </html>
@@ -280,7 +283,10 @@ def dynamic_page(slug: str):
     question, answer, related_json = row
     related = json.loads(related_json)
     
-    related_html = "".join([f'<div class="related-q" onclick="window.location=\'/\'; localStorage.setItem(\'nextQ\',\'{q}\')">{q}</div>' for q in related])
+    # Pre-build related HTML to avoid f-string JS conflict
+    related_html = ""
+    for q in related:
+        related_html += f'<div class="related-q" onclick="window.location=\'/\'">{q}</div>'
 
     return f"""
 <!DOCTYPE html>
@@ -288,7 +294,7 @@ def dynamic_page(slug: str):
 <head>
     <title>{question} | RuleMate India</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    {SHARED_STYLE}
+    {CSS_STYLE}
 </head>
 <body>
     <div class="logo-container" onclick="window.location='/'">
@@ -310,7 +316,3 @@ def dynamic_page(slug: str):
 </body>
 </html>
 """
-
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
