@@ -1,41 +1,57 @@
 import os
 import re
 import sqlite3
+import json
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse, Response
 from pydantic import BaseModel
 from dotenv import load_dotenv
 from openai import OpenAI
 
+# 1. Configuration & Setup
 load_dotenv()
-
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 app = FastAPI()
 
-# ---------------- DATABASE ----------------
+# ---------------- DATABASE SETUP ----------------
 
-conn = sqlite3.connect("rulemate.db", check_same_thread=False)
-cursor = conn.cursor()
+def get_db():
+    conn = sqlite3.connect("rulemate.db", check_same_thread=False)
+    return conn
 
+db_conn = get_db()
+cursor = db_conn.cursor()
 cursor.execute("""
 CREATE TABLE IF NOT EXISTS questions (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     question TEXT,
     answer TEXT,
-    slug TEXT UNIQUE
+    slug TEXT UNIQUE,
+    related_qs TEXT
 )
 """)
-conn.commit()
+db_conn.commit()
 
-# ---------------- SYSTEM PROMPT ----------------
+# ---------------- PROMPTS & UTILS ----------------
 
 SYSTEM_PROMPT = """
 You are an Indian Government Rules Assistant.
-Answer ONLY Indian government rules.
-Use simple language.
+STRICT RULES:
+- Answer ONLY Indian government rules, laws, schemes, IPC sections.
+- Use simple language.
+- Do NOT give opinions or guess.
+FORMAT EVERY ANSWER EXACTLY LIKE THIS:
+SHORT ANSWER:
+(one clear sentence)
+DETAILS:
+- Bullet point
+PUNISHMENT / IMPLICATIONS (if applicable):
+- Bullet point
+SOURCE:
+- Name of Act / Department
 """
 
-class Question(BaseModel):
+class QuestionRequest(BaseModel):
     question: str
 
 def slugify(text):
@@ -44,193 +60,257 @@ def slugify(text):
     text = text.strip().replace(' ', '-')
     return text
 
-# ---------------- SITEMAP ----------------
+# ---------------- API ROUTES ----------------
 
 @app.get("/sitemap.xml", response_class=Response)
 def sitemap():
     cursor.execute("SELECT slug FROM questions")
     rows = cursor.fetchall()
-
-    urls = ""
-    for row in rows:
-        urls += f"<url><loc>https://rulemate-india.onrender.com/{row[0]}</loc></url>"
-
+    
+    urls = "".join([f"<url><loc>https://rulemate-india.onrender.com/{row[0]}</loc><changefreq>weekly</changefreq></url>" for row in rows])
+    
     xml = f"""<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-<url><loc>https://rulemate-india.onrender.com/</loc></url>
-{urls}
+  <url><loc>https://rulemate-india.onrender.com/</loc><priority>1.0</priority></url>
+  {urls}
 </urlset>"""
-
     return Response(content=xml, media_type="application/xml")
 
-# ---------------- ASK API ----------------
-
 @app.post("/ask")
-def ask_rule(q: Question):
+def ask_rule(q: QuestionRequest):
     slug = slugify(q.question)
 
-    cursor.execute("SELECT answer FROM questions WHERE slug=?", (slug,))
-    row = cursor.fetchone()
+    # Check Database first
+    cursor.execute("SELECT answer, related_qs FROM questions WHERE slug=?", (slug,))
+    existing = cursor.fetchone()
 
-    if row:
-        answer = row[0]
-    else:
-        response = client.chat.completions.create(
-            model="gpt-4o-mini",
-            messages=[
-                {"role": "system", "content": SYSTEM_PROMPT},
-                {"role": "user", "content": q.question}
-            ],
-            temperature=0.2
-        )
-        answer = response.choices[0].message.content
+    if existing:
+        return {
+            "answer": existing[0],
+            "slug": slug,
+            "related": json.loads(existing[1])
+        }
 
+    # 1. Generate Main Answer
+    response = client.chat.completions.create(
+        model="gpt-4o-mini",
+        messages=[
+            {"role": "system", "content": SYSTEM_PROMPT},
+            {"role": "user", "content": q.question}
+        ],
+        temperature=0.2
+    )
+    answer = response.choices[0].message.content
+
+    # 2. Generate Related Questions
+    related_response = client.chat.completions.create(
+        model="gpt-4o-mini",
+        messages=[
+            {"role": "system", "content": "Generate 4 short related questions about Indian laws. Return them one per line. No numbers."},
+            {"role": "user", "content": f"Follow-up for: {q.question}"}
+        ],
+        temperature=0.5
+    )
+    related = [r.strip("- ").strip() for r in related_response.choices[0].message.content.split("\n") if r.strip()][:4]
+
+    # 3. Store in DB
+    try:
         cursor.execute(
-            "INSERT INTO questions (question, answer, slug) VALUES (?, ?, ?)",
-            (q.question, answer, slug)
+            "INSERT INTO questions (question, answer, slug, related_qs) VALUES (?, ?, ?, ?)",
+            (q.question, answer, slug, json.dumps(related))
         )
-        conn.commit()
+        db_conn.commit()
+    except sqlite3.IntegrityError:
+        pass 
 
-    return {"answer": answer, "slug": slug, "related": []}
+    return {"answer": answer, "slug": slug, "related": related}
 
-# ---------------- HOME PAGE ----------------
+# ---------------- UI TEMPLATES ----------------
+
+SHARED_STYLE = """
+<style>
+    body {
+        margin: 0; padding: 0; min-height: 100vh;
+        display: flex; flex-direction: column; align-items: center;
+        background: radial-gradient(circle at 50% -10%, #1a1b3a 0%, #030414 70%);
+        background-color: #030414; color: #ffffff;
+        font-family: 'Inter', -apple-system, sans-serif;
+        padding: 40px 20px;
+    }
+    .logo-container { display: flex; align-items: center; gap: 10px; margin-bottom: 5px; cursor: pointer; }
+    .flag-emoji { font-size: 2rem; }
+    h1 { font-size: 2.8rem; font-weight: 800; margin: 0; letter-spacing: -0.04em; }
+    .hero-subtitle { color: rgba(255, 255, 255, 0.5); font-size: 1.1rem; margin-bottom: 35px; text-align: center; }
+    
+    .glass-card {
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%);
+        backdrop-filter: blur(25px);
+        border-top: 1px solid rgba(255, 255, 255, 0.3);
+        border-left: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 24px;
+        padding: 40px; width: 100%; max-width: 720px;
+        box-shadow: 0 30px 60px rgba(0, 0, 0, 0.8);
+        margin-bottom: 50px; box-sizing: border-box;
+    }
+
+    #userInput {
+        width: 100%; background: rgba(0, 0, 0, 0.5); border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px; padding: 20px; color: white; font-size: 1rem;
+        margin-bottom: 20px; box-sizing: border-box; outline: none;
+        box-shadow: inset 0 4px 12px rgba(0,0,0,0.5);
+    }
+
+    .btn-ask {
+        width: 100%; 
+        background: linear-gradient(to bottom, #6352c7 0%, #372b85 100%);
+        color: white; border: none; padding: 18px; border-radius: 12px;
+        font-size: 1.1rem; font-weight: 700; cursor: pointer;
+        border-bottom: 4px solid #1f1752; transition: all 0.1s;
+    }
+
+    .btn-ask:active { transform: translateY(2px); border-bottom-width: 2px; }
+
+    .loading-pulse {
+        animation: pulse 1.5s infinite; color: rgba(255,255,255,0.4); text-align: center;
+    }
+    @keyframes pulse { 0% {opacity: 0.4} 50% {opacity: 0.8} 100% {opacity: 0.4} }
+
+    .answer-box { 
+        background: rgba(0, 0, 0, 0.3); border-radius: 15px; padding: 25px; 
+        white-space: pre-wrap; line-height: 1.6; margin-top: 30px;
+    }
+    
+    .related-q { 
+        background: rgba(255,255,255,0.03); padding: 12px; border-radius: 10px;
+        margin-top: 10px; cursor: pointer; border: 1px solid rgba(255,255,255,0.05);
+        font-size: 0.9rem; transition: 0.2s;
+    }
+    .related-q:hover { background: rgba(255,255,255,0.1); }
+
+    .footer-section { text-align: center; font-size: 0.8rem; color: rgba(255,255,255,0.3); margin-top: auto; }
+</style>
+"""
 
 @app.get("/", response_class=HTMLResponse)
 def home():
-    return """
+    return f"""
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>RuleMate India</title>
-
-<style>
-body {
-    margin: 0;
-    padding: 0;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    background: radial-gradient(circle at 50% -10%, #1a1b3a 0%, #030414 70%);
-    color: #ffffff;
-    font-family: Arial, sans-serif;
-    padding: 40px 20px;
-}
-
-.logo-container {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.flag-emoji {
-    font-size: 2rem;
-}
-
-h1 {
-    font-size: 2.5rem;
-    margin: 0;
-}
-
-.glass-card {
-    background: rgba(255,255,255,0.08);
-    backdrop-filter: blur(20px);
-    border-radius: 20px;
-    padding: 30px;
-    width: 100%;
-    max-width: 700px;
-    margin-top: 30px;
-}
-
-input {
-    width: 100%;
-    padding: 15px;
-    border-radius: 10px;
-    border: none;
-    margin-bottom: 15px;
-}
-
-button {
-    width: 100%;
-    padding: 15px;
-    border-radius: 10px;
-    border: none;
-    background: #6352c7;
-    color: white;
-    font-weight: bold;
-    cursor: pointer;
-}
-
-.answer-box {
-    margin-top: 20px;
-    white-space: pre-wrap;
-}
-</style>
+    <title>RuleMate India | Gov Rules Simplified</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {SHARED_STYLE}
 </head>
-
 <body>
+    <div class="logo-container" onclick="window.location='/'">
+        <span class="flag-emoji">🇮🇳</span>
+        <h1>RuleMate India</h1>
+    </div>
+    <p class="hero-subtitle">Indian laws and government rules, made simple.</p>
 
-<div class="logo-container">
-    <span class="flag-emoji">🇮🇳</span>
-    <h1>RuleMate India</h1>
-</div>
+    <div class="glass-card">
+        <input type="text" id="userInput" placeholder="e.g. Traffic fines for no helmet?">
+        <button id="askBtn" class="btn-ask" onclick="handleAsk()">Ask RuleMate</button>
 
-<div class="glass-card">
-    <input type="text" id="q" placeholder="Ask about Indian rules">
-    <button onclick="ask()">Ask</button>
+        <div id="resultArea" style="display:none;">
+            <div class="answer-box" id="aiAnswer"></div>
+            <div style="margin-top:25px; color:#6352c7; font-weight:bold;">Related Questions:</div>
+            <div id="relatedQuestions"></div>
+        </div>
+    </div>
 
-    <div id="a" class="answer-box"></div>
-</div>
+    <div class="footer-section">
+        <p>Disclaimer: Educational information only. Not legal advice. Always check official Gazettes.</p>
+    </div>
 
-<script>
-async function ask() {
-    const q = document.getElementById("q").value;
+    <script>
+        async function handleAsk() {
+            const input = document.getElementById('userInput');
+            const btn = document.getElementById('askBtn');
+            const resultArea = document.getElementById('resultArea');
+            const aiAnswer = document.getElementById('aiAnswer');
+            const relatedBox = document.getElementById('relatedQuestions');
 
-    const r = await fetch("/ask", {
-        method: "POST",
-        headers: {"Content-Type":"application/json"},
-        body: JSON.stringify({question:q})
-    });
+            if(!input.value.trim()) return;
 
-    const d = await r.json();
+            btn.disabled = true;
+            btn.innerText = "Consulting Legal Records...";
+            resultArea.style.display = "block";
+            aiAnswer.innerHTML = '<div class="loading-pulse">Analyzing Indian Constitution & Acts...</div>';
 
-    document.getElementById("a").innerText = d.answer;
+            try {{
+                const res = await fetch('/ask', {{
+                    method: 'POST',
+                    headers: {{'Content-Type': 'application/json'}},
+                    body: JSON.stringify({{ question: input.value }})
+                }});
+                const data = await res.json();
 
-    // VERY IMPORTANT — dynamic URL
-    window.history.pushState({}, "", "/" + d.slug);
-}
-</script>
-
+                window.history.pushState({{}}, "", "/" + data.slug);
+                aiAnswer.innerText = data.answer;
+                
+                relatedBox.innerHTML = "";
+                data.related.forEach(q => {{
+                    const d = document.createElement('div');
+                    d.className = 'related-q';
+                    d.innerText = q;
+                    d.onclick = () => {{ input.value = q; handleAsk(); window.scrollTo(0,0); }};
+                    relatedBox.appendChild(d);
+                }});
+            }} catch(e) {{
+                aiAnswer.innerText = "Error connecting to server.";
+            }} finally {{
+                btn.disabled = false;
+                btn.innerText = "Ask RuleMate";
+            }}
+        }
+    </script>
 </body>
 </html>
 """
 
-
-# ---------------- DYNAMIC PAGE ----------------
-
 @app.get("/{slug}", response_class=HTMLResponse)
 def dynamic_page(slug: str):
-    cursor.execute("SELECT question, answer FROM questions WHERE slug=?", (slug,))
+    cursor.execute("SELECT question, answer, related_qs FROM questions WHERE slug=?", (slug,))
     row = cursor.fetchone()
 
     if not row:
         return home()
 
-    question, answer = row
+    question, answer, related_json = row
+    related = json.loads(related_json)
+    
+    related_html = "".join([f'<div class="related-q" onclick="window.location=\'/\'; localStorage.setItem(\'nextQ\',\'{q}\')">{q}</div>' for q in related])
 
     return f"""
-    <html>
-    <head>
-        <title>{question} | RuleMate India</title>
-    </head>
-    <body style="font-family:Arial;max-width:600px;margin:50px auto;">
-        <h1>{question}</h1>
-        <div style="white-space:pre-wrap;">{answer}</div>
-        <br><br>
-        <a href="/">Ask another question</a>
-    </body>
-    </html>
-    """
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{question} | RuleMate India</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {SHARED_STYLE}
+</head>
+<body>
+    <div class="logo-container" onclick="window.location='/'">
+        <span class="flag-emoji">🇮🇳</span>
+        <h1>RuleMate India</h1>
+    </div>
+    
+    <div class="glass-card">
+        <h2 style="margin-top:0; color:#7a68e8;">{question}</h2>
+        <div class="answer-box" style="background:rgba(255,255,255,0.02)">{answer}</div>
+        
+        <div style="margin-top:25px; color:#6352c7; font-weight:bold;">More about this:</div>
+        {related_html}
+        
+        <div style="margin-top:30px; text-align:center;">
+            <a href="/" style="color:rgba(255,255,255,0.5); text-decoration:none;">← Ask a New Question</a>
+        </div>
+    </div>
+</body>
+</html>
+"""
 
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)
