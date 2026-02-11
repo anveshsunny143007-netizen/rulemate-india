@@ -195,7 +195,7 @@ def home():
 
         <div id="resultArea">
             <div class="answer-box" id="aiAnswer"></div>
-            <div class="related-title">FOLLOW-UP QUESTIONS:</div>
+            <div class="related-title">Related Questions:</div>
             <div id="relatedQuestions"></div>
         </div>
 
