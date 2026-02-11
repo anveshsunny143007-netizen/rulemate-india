@@ -6,11 +6,11 @@ from pydantic import BaseModel
 from dotenv import load_dotenv
 from openai import OpenAI
 
+# 1. Configuration & Setup
 load_dotenv()
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 app = FastAPI()
 
-# System Prompt as per your guidelines
 SYSTEM_PROMPT = """
 You are an Indian Government Rules Assistant.
 STRICT RULES:
@@ -73,151 +73,143 @@ def home():
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RuleMate India | Indian Government Rules Assistant</title>
+    <title>RuleMate India</title>
     <style>
-        :root {
-            --india-saffron: #FF9933;
-            --india-white: #FFFFFF;
-            --india-green: #138808;
-            --india-blue: #000080;
-            --primary-blue: #2563eb;
-        }
-
         body {
             margin: 0; padding: 0; min-height: 100vh;
             display: flex; flex-direction: column; align-items: center;
-            background-color: #f0f4f8;
-            font-family: 'Inter', sans-serif;
-            overflow-x: hidden;
-            position: relative;
+            background: radial-gradient(circle at 50% -10%, #1a1b3a 0%, #030414 70%);
+            background-color: #030414; color: #ffffff;
+            font-family: 'Inter', -apple-system, sans-serif;
+            padding: 40px 20px;
         }
-
-        /* VIBRANT TRICOLOR BACKGROUND MESH */
-        .background-mesh {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            z-index: -2;
-            background: 
-                radial-gradient(at 0% 0%, rgba(255, 153, 51, 0.15) 0px, transparent 50%),
-                radial-gradient(at 100% 0%, rgba(37, 99, 235, 0.1) 0px, transparent 50%),
-                radial-gradient(at 100% 100%, rgba(19, 136, 8, 0.15) 0px, transparent 50%),
-                radial-gradient(at 0% 100%, rgba(37, 99, 235, 0.1) 0px, transparent 50%);
-        }
-
-        /* DECORATIVE WAVES */
-        .wave {
-            position: fixed; width: 200%; height: 400px; z-index: -1; opacity: 0.4;
-            left: -50%; filter: blur(60px); pointer-events: none;
-        }
-        .wave-top { top: -200px; background: var(--india-saffron); border-radius: 40%; transform: rotate(-5deg); }
-        .wave-bottom { bottom: -200px; background: var(--india-green); border-radius: 43%; transform: rotate(5deg); }
-
-        /* LOGO & HEADER */
-        .header { text-align: center; padding: 60px 20px 40px; }
-        .logo { font-size: 3rem; font-weight: 800; color: #1e293b; letter-spacing: -1px; }
-        .logo span.in { font-size: 1.2rem; vertical-align: middle; color: #64748b; margin-right: 10px; }
-        .logo span.india { color: var(--primary-blue); }
-        .subtitle { color: #475569; font-size: 1.2rem; margin-top: 10px; }
-
-        /* HIGH-DEPTH GLASS CARD */
-        .card-container { width: 100%; max-width: 850px; padding: 0 20px; box-sizing: border-box; perspective: 1000px; }
+        .logo-container { display: flex; align-items: center; gap: 10px; margin-bottom: 5px; }
+        .flag-emoji { font-size: 2rem; }
+        h1 { font-size: 2.8rem; font-weight: 800; margin: 0; letter-spacing: -0.04em; }
+        .hero-subtitle { color: rgba(255, 255, 255, 0.5); font-size: 1.1rem; margin-bottom: 35px; text-align: center; }
+        
+        /* 3D METALLIC GLASS CARD */
         .glass-card {
-            background: rgba(255, 255, 255, 0.9);
-            backdrop-filter: blur(20px);
-            border-radius: 35px;
-            padding: 50px;
-            border: 1px solid rgba(255, 255, 255, 0.8);
-            box-shadow: 
-                0 30px 60px rgba(0, 0, 0, 0.08),
-                inset 0 0 0 1px rgba(255, 255, 255, 0.5);
-            position: relative;
-            transform: rotateX(1deg);
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%);
+            background-image: radial-gradient(at 0% 0%, rgba(255,255,255,0.1) 0%, transparent 50%);
+            backdrop-filter: blur(25px);
+            border-top: 1px solid rgba(255, 255, 255, 0.3);
+            border-left: 1px solid rgba(255, 255, 255, 0.1);
+            border-bottom: 2px solid rgba(0, 0, 0, 0.6);
+            border-right: 2px solid rgba(0, 0, 0, 0.4);
+            border-radius: 24px;
+            padding: 40px; width: 100%; max-width: 720px;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255,255,255,0.05);
+            margin-bottom: 50px; box-sizing: border-box;
         }
 
-        /* MONUMENT SVGS */
-        .monument { position: absolute; bottom: 20px; width: 120px; opacity: 0.08; pointer-events: none; fill: #1e293b; }
-        .mon-left { left: 40px; }
-        .mon-right { right: 40px; }
-
-        /* INPUTS */
+        /* SUNKEN INPUT */
         #userInput {
-            width: 100%; background: #f1f5f9; border: 1px solid #e2e8f0;
-            border-radius: 18px; padding: 24px; color: #1e293b; font-size: 1.1rem;
-            margin-bottom: 25px; box-sizing: border-box; outline: none;
-            box-shadow: inset 0 2px 4px rgba(0,0,0,0.03);
+            width: 100%; background: rgba(0, 0, 0, 0.5); border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 12px; padding: 20px; color: white; font-size: 1rem;
+            margin-bottom: 20px; box-sizing: border-box; outline: none;
+            box-shadow: inset 0 4px 12px rgba(0,0,0,0.9);
         }
+
+        /* FADED METALLIC BUTTON (Lowered Brightness) */
         .btn-ask {
-            width: 100%; background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
-            color: white; border: none; padding: 22px; border-radius: 18px;
-            font-size: 1.3rem; font-weight: 700; cursor: pointer;
-            box-shadow: 0 15px 35px rgba(37, 99, 235, 0.3);
-            transition: all 0.3s ease;
+            width: 100%; 
+            /* Desaturated "Deep Purple Steel" Gradient */
+            background: linear-gradient(to bottom, 
+                #6352c7 0%, 
+                #4e3eb3 45%, 
+                #44369e 50%, 
+                #372b85 100%);
+            color: rgba(255, 255, 255, 0.9); border: none;
+            padding: 18px; border-radius: 12px; font-size: 1.1rem; font-weight: 700;
+            cursor: pointer; position: relative;
+            
+            border-top: 1px solid rgba(255,255,255,0.2);
+            border-bottom: 5px solid #1f1752;
+            
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5);
+            transition: all 0.1s;
         }
-        .btn-ask:hover { transform: translateY(-3px); box-shadow: 0 20px 45px rgba(37, 99, 235, 0.4); }
 
-        .tagline {
-            display: inline-flex; align-items: center; margin-top: 35px;
-            padding: 12px 25px; border-radius: 100px; background: rgba(37, 99, 235, 0.05);
-            color: #1e40af; font-size: 0.9rem; font-weight: 600; border: 1px solid rgba(37,99,235,0.1);
+        .btn-ask:hover { 
+            filter: brightness(1.15); 
+            background: linear-gradient(to bottom, #6d5dd1 0%, #44369e 100%);
         }
 
-        /* ASHOKA CHAKRA BG */
-        .chakra-bg {
-            position: fixed; top: 15%; left: -150px; width: 500px; height: 500px;
-            opacity: 0.03; z-index: -1; transform: rotate(15deg);
+        .btn-ask:active {
+            transform: translateY(3px);
+            border-bottom: 2px solid #1f1752;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+        }
+        
+        /* PULSE ANIMATION */
+        @keyframes pulse-fade {
+            0% { opacity: 0.3; } 50% { opacity: 0.6; } 100% { opacity: 0.3; }
+        }
+        .loading-pulse {
+            animation: pulse-fade 1.5s infinite ease-in-out;
+            color: rgba(255, 255, 255, 0.4);
+            font-style: italic; text-align: center; padding: 20px;
         }
 
-        .footer { text-align: center; padding: 80px 20px; max-width: 800px; margin: 0 auto; }
-        .footer h3 { color: #1e293b; margin-bottom: 15px; }
-        .footer p { color: #64748b; line-height: 1.6; }
+        #resultArea { margin-top: 30px; display: none; text-align: left; }
+        .answer-box { 
+            background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255,255,255,0.05); 
+            border-radius: 15px; padding: 25px; white-space: pre-wrap; line-height: 1.6;
+            box-shadow: inset 0 2px 10px rgba(0,0,0,0.6);
+            transition: opacity 0.4s ease-in-out;
+        }
+        
+        .related-title { margin-top: 25px; font-weight: 700; color: #6352c7; font-size: 0.9rem; }
+        .related-q { 
+            display: block; background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255,255,255,0.05);
+            padding: 12px 15px; border-radius: 10px; margin-top: 10px;
+            cursor: pointer; font-size: 0.85rem; transition: 0.2s; color: rgba(255,255,255,0.7);
+        }
+        .related-q:hover { background: rgba(255, 255, 255, 0.06); color: white; }
+
+        .check-tag {
+            display: inline-flex; margin-top: 25px; padding: 8px 18px;
+            border-radius: 100px; background: rgba(99, 82, 199, 0.08);
+            border: 1px solid rgba(99, 82, 199, 0.15); color: #7a68e8; font-size: 0.8rem;
+        }
+
+        .footer-section { text-align: center; max-width: 650px; margin-top: auto; }
+        .disclaimer-container {
+            border-top: 1px solid rgba(255, 255, 255, 0.08); padding-top: 25px;
+            font-size: 0.75rem; color: rgba(255, 255, 255, 0.3);
+        }
     </style>
 </head>
 <body>
-    <div class="background-mesh"></div>
-    <div class="wave wave-top"></div>
-    <div class="wave wave-bottom"></div>
-
-    <svg class="chakra-bg" viewBox="0 0 100 100">
-        <circle cx="50" cy="50" r="45" fill="none" stroke="#000080" stroke-width="1"/>
-        <circle cx="50" cy="50" r="5" fill="#000080"/>
-        <g stroke="#000080" stroke-width="0.5">
-            <script>
-                for(let i=0; i<24; i++) {
-                    let angle = i * 15 * (Math.PI/180);
-                    let x2 = 50 + 45 * Math.cos(angle);
-                    let y2 = 50 + 45 * Math.sin(angle);
-                    document.write(`<line x1="50" y1="50" x2="${x2}" y2="${y2}" />`);
-                }
-            </script>
-        </g>
-    </svg>
-
-    <div class="header">
-        <h1 class="logo"><span class="in">IN</span> RuleMate <span class="india">India</span></h1>
-        <p class="subtitle">Government rules made easy. Just ask.</p>
+    <div class="logo-container">
+        <span class="flag-emoji">🇮🇳</span>
+        <h1>RuleMate India</h1>
     </div>
+    <p class="hero-subtitle">Government rules made easy. Just ask.</p>
 
-    <div class="card-container">
-        <div class="glass-card">
-            <svg class="monument mon-left" viewBox="0 0 24 24"><path d="M5 21h14v-2H5v2zm2-4h10V9l-5-4-5 4v8zm3-6h4v4h-4v-4z"/></svg>
-            <svg class="monument mon-right" viewBox="0 0 24 24"><path d="M11 21h2V6l-1-3-1 3v15zM9 21h1v-2H9v2zm5 0h1v-2h-1v2z"/></svg>
+    <div class="glass-card">
+        <input type="text" id="userInput" placeholder="Example: What are the latest traffic rules in India?">
+        <button id="askBtn" class="btn-ask" onclick="handleAsk()">Ask</button>
 
-            <input type="text" id="userInput" placeholder="Example: What are the traffic rules for 2-wheelers?">
-            <button id="askBtn" class="btn-ask" onclick="handleAsk()">Ask</button>
+        <div id="resultArea">
+            <div class="answer-box" id="aiAnswer"></div>
+            <div class="related-title">Related Questions:</div>
+            <div id="relatedQuestions"></div>
+        </div>
 
-            <div id="resultArea" style="display:none; margin-top:30px;">
-                <div id="aiAnswer" style="background:#fff; padding:25px; border-radius:20px; border:1px solid #e2e8f0; line-height:1.7;"></div>
-                <div id="relatedQuestions" style="margin-top:20px;"></div>
-            </div>
-
-            <div style="text-align: center;">
-                <div class="tagline">✓ Clarifying Indian regulations through an educational lens.</div>
-            </div>
+        <div style="text-align: center;">
+            <div class="check-tag">✓ Clarifying Indian regulations through an educational lens.</div>
         </div>
     </div>
 
-    <div class="footer">
-        <h3>About RuleMate India</h3>
-        <p>RuleMate India helps people understand Indian government rules, laws, and procedures in simple language. This platform is for educational purposes only and does not constitute legal advice.</p>
+     <div class="footer-section">
+        <div class="about-title">About RuleMate India</div>
+        <p class="about-text">RuleMate India helps people understand Indian government rules, laws, fines and procedures in simple language.</p>
+        <div class="disclaimer-container">
+            <strong>Disclaimer:</strong> This website provides general information on Indian government rules and laws for educational purposes only. It is not legal advice. Laws and rules may change. Always verify with official government notifications or consult a qualified professional. 
+        </div>
     </div>
 
     <script>
@@ -232,8 +224,13 @@ def home():
 
             btn.disabled = true;
             btn.innerText = "Processing...";
-            aiAnswer.innerHTML = "Consulting official records...";
-            resultArea.style.display = "block";
+            aiAnswer.style.opacity = "0";
+            
+            setTimeout(() => {
+                aiAnswer.innerHTML = '<div class="loading-pulse">Searching official codes...</div>';
+                aiAnswer.style.opacity = "1";
+                resultArea.style.display = "block";
+            }, 400);
             
             try {
                 const response = await fetch('/ask', {
@@ -243,19 +240,31 @@ def home():
                 });
                 const data = await response.json();
                 
-                aiAnswer.innerText = data.answer;
-                relatedBox.innerHTML = '<p style="font-weight:700; color:#64748b; margin:20px 0 10px;">RELATED:</p>';
-                data.related.forEach(q => {
-                    const div = document.createElement('div');
-                    div.style = "background:#f8fafc; padding:15px; border-radius:12px; margin-bottom:8px; cursor:pointer; border:1px solid #e2e8f0;";
-                    div.innerText = q;
-                    div.onclick = () => { queryInput.value = q; handleAsk(); };
-                    relatedBox.appendChild(div);
-                });
+                aiAnswer.style.opacity = "0";
+                
+                setTimeout(() => {
+                    aiAnswer.innerText = data.answer;
+                    aiAnswer.style.opacity = "1";
+                    relatedBox.innerHTML = "";
+                    data.related.forEach(q => {
+                        const div = document.createElement('div');
+                        div.className = 'related-q';
+                        let cleanQ = q.replace(/^\d+[\.\)\s]+/, '');
+                        div.innerText = cleanQ;
+                        div.onclick = () => { 
+                            queryInput.value = cleanQ; 
+                            handleAsk(); 
+                            window.scrollTo({ top: 0, behavior: 'smooth' }); 
+                        };
+                        relatedBox.appendChild(div);
+                    });
+                }, 400);
             } catch (err) {
-                aiAnswer.innerText = "Connection error. Please try again.";
+                aiAnswer.innerText = "Error fetching answer.";
+                aiAnswer.style.opacity = "1";
             } finally {
-                btn.disabled = false; btn.innerText = "Ask";
+                btn.disabled = false;
+                btn.innerText = "Ask";
             }
         }
     </script>
@@ -263,7 +272,7 @@ def home():
 </html>
 """
 
+# 4. Dynamic Route
 @app.get("/{slug}", response_class=HTMLResponse)
 def dynamic_page(slug: str):
     return home()
-
