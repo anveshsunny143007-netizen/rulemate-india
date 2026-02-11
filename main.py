@@ -247,6 +247,7 @@ def home():
                     body: JSON.stringify({ question: queryInput.value })
                 });
                 const data = await response.json();
+                window.history.pushState({}, "", "/" + data.slug);
                 
                 aiAnswer.style.opacity = "0";
                 
@@ -284,3 +285,4 @@ def home():
 @app.get("/{slug}", response_class=HTMLResponse)
 def dynamic_page(slug: str):
     return home()
+
