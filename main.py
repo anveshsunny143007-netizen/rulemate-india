@@ -46,7 +46,6 @@ def sitemap():
 
 @app.post("/ask")
 def ask_rule(q: Question):
-    # Main Answer call
     response = client.chat.completions.create(
         model="gpt-4o-mini",
         messages=[{"role": "system", "content": SYSTEM_PROMPT}, {"role": "user", "content": q.question}],
@@ -55,20 +54,16 @@ def ask_rule(q: Question):
     answer = response.choices[0].message.content
     slug = slugify(q.question)
     
-    # Related Questions Prompt to ensure exactly 4
     related_response = client.chat.completions.create(
         model="gpt-4o-mini",
         messages=[
-            {"role": "system", "content": "You are a helpful assistant. Generate EXACTLY 4 short related questions about Indian laws. Return them as a simple list with one question per line. Do not include extra text."},
+            {"role": "system", "content": "Generate EXACTLY 4 short related questions about Indian laws. Return them as a simple list with one question per line. No serial numbers."},
             {"role": "user", "content": f"Provide 4 follow-up questions for: {q.question}"}
         ],
         temperature=0.5
     )
-    
     related = [r.strip("- ").strip() for r in related_response.choices[0].message.content.split("\n") if r.strip()]
-    related = related[:4] 
-
-    return {"answer": answer, "slug": slug, "related": related}
+    return {"answer": answer, "slug": slug, "related": related[:4]}
 
 @app.get("/", response_class=HTMLResponse)
 def home():
@@ -91,55 +86,66 @@ def home():
         .logo-container { display: flex; align-items: center; gap: 10px; margin-bottom: 5px; }
         .flag-emoji { font-size: 2rem; }
         h1 { font-size: 2.8rem; font-weight: 800; margin: 0; letter-spacing: -0.04em; }
-        .hero-subtitle { color: rgba(255, 255, 255, 0.6); font-size: 1.1rem; margin-bottom: 35px; text-align: center; }
+        .hero-subtitle { color: rgba(255, 255, 255, 0.5); font-size: 1.1rem; margin-bottom: 35px; text-align: center; }
         
         /* 3D METALLIC GLASS CARD */
         .glass-card {
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.03) 100%);
-            background-image: radial-gradient(at 0% 0%, rgba(255,255,255,0.15) 0%, transparent 50%);
-            backdrop-filter: blur(20px);
-            border-top: 1px solid rgba(255, 255, 255, 0.4);
-            border-left: 1px solid rgba(255, 255, 255, 0.2);
-            border-bottom: 3px solid rgba(0, 0, 0, 0.5);
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%);
+            background-image: radial-gradient(at 0% 0%, rgba(255,255,255,0.1) 0%, transparent 50%);
+            backdrop-filter: blur(25px);
+            border-top: 1px solid rgba(255, 255, 255, 0.3);
+            border-left: 1px solid rgba(255, 255, 255, 0.1);
+            border-bottom: 2px solid rgba(0, 0, 0, 0.6);
             border-right: 2px solid rgba(0, 0, 0, 0.4);
             border-radius: 24px;
             padding: 40px; width: 100%; max-width: 720px;
-            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255,255,255,0.1);
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255,255,255,0.05);
             margin-bottom: 50px; box-sizing: border-box;
         }
 
         /* SUNKEN INPUT */
         #userInput {
-            width: 100%; background: rgba(0, 0, 0, 0.4); border: 1px solid rgba(255, 255, 255, 0.05);
+            width: 100%; background: rgba(0, 0, 0, 0.5); border: 1px solid rgba(255, 255, 255, 0.05);
             border-radius: 12px; padding: 20px; color: white; font-size: 1rem;
             margin-bottom: 20px; box-sizing: border-box; outline: none;
-            box-shadow: inset 0 4px 10px rgba(0,0,0,0.7);
+            box-shadow: inset 0 4px 12px rgba(0,0,0,0.9);
         }
 
-        /* 3D GLOSSY BUTTON */
+        /* FADED METALLIC BUTTON (Lowered Brightness) */
         .btn-ask {
             width: 100%; 
-            background: linear-gradient(to bottom, #8e78ff 0%, #7053ff 45%, #5a3fff 50%, #4a2fe0 100%);
-            color: white; border: none;
+            /* Desaturated "Deep Purple Steel" Gradient */
+            background: linear-gradient(to bottom, 
+                #6352c7 0%, 
+                #4e3eb3 45%, 
+                #44369e 50%, 
+                #372b85 100%);
+            color: rgba(255, 255, 255, 0.9); border: none;
             padding: 18px; border-radius: 12px; font-size: 1.1rem; font-weight: 700;
             cursor: pointer; position: relative;
-            border-top: 1px solid rgba(255,255,255,0.4);
-            border-bottom: 5px solid #2d1b9e;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+            
+            border-top: 1px solid rgba(255,255,255,0.2);
+            border-bottom: 5px solid #1f1752;
+            
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5);
             transition: all 0.1s;
         }
-        .btn-ask:hover { filter: brightness(1.1); }
+
+        .btn-ask:hover { 
+            filter: brightness(1.15); 
+            background: linear-gradient(to bottom, #6d5dd1 0%, #44369e 100%);
+        }
+
         .btn-ask:active {
             transform: translateY(3px);
-            border-bottom: 2px solid #2d1b9e;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+            border-bottom: 2px solid #1f1752;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
         }
         
         /* PULSE ANIMATION */
         @keyframes pulse-fade {
-            0% { opacity: 0.3; }
-            50% { opacity: 0.6; }
-            100% { opacity: 0.3; }
+            0% { opacity: 0.3; } 50% { opacity: 0.6; } 100% { opacity: 0.3; }
         }
         .loading-pulse {
             animation: pulse-fade 1.5s infinite ease-in-out;
@@ -149,33 +155,30 @@ def home():
 
         #resultArea { margin-top: 30px; display: none; text-align: left; }
         .answer-box { 
-            background: rgba(0, 0, 0, 0.2); border: 1px solid rgba(255,255,255,0.05); 
+            background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255,255,255,0.05); 
             border-radius: 15px; padding: 25px; white-space: pre-wrap; line-height: 1.6;
-            box-shadow: inset 0 2px 10px rgba(0,0,0,0.5);
+            box-shadow: inset 0 2px 10px rgba(0,0,0,0.6);
             transition: opacity 0.4s ease-in-out;
-            opacity: 1;
         }
         
-        .related-title { margin-top: 25px; font-weight: 700; color: #7053ff; }
+        .related-title { margin-top: 25px; font-weight: 700; color: #6352c7; font-size: 0.9rem; }
         .related-q { 
-            display: block; background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255,255,255,0.05);
+            display: block; background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255,255,255,0.05);
             padding: 12px 15px; border-radius: 10px; margin-top: 10px;
-            cursor: pointer; font-size: 0.9rem; transition: 0.2s; color: rgba(255,255,255,0.8);
+            cursor: pointer; font-size: 0.85rem; transition: 0.2s; color: rgba(255,255,255,0.7);
         }
-        .related-q:hover { background: rgba(255, 255, 255, 0.08); color: white; }
+        .related-q:hover { background: rgba(255, 255, 255, 0.06); color: white; }
 
         .check-tag {
             display: inline-flex; margin-top: 25px; padding: 8px 18px;
-            border-radius: 100px; background: rgba(112, 83, 255, 0.1);
-            border: 1px solid rgba(112, 83, 255, 0.2); color: #7053ff; font-size: 0.85rem;
+            border-radius: 100px; background: rgba(99, 82, 199, 0.08);
+            border: 1px solid rgba(99, 82, 199, 0.15); color: #7a68e8; font-size: 0.8rem;
         }
 
         .footer-section { text-align: center; max-width: 650px; margin-top: auto; }
-        .about-title { font-size: 1rem; font-weight: 700; margin-bottom: 10px; color: #fff; }
-        .about-text { color: rgba(255, 255, 255, 0.5); font-size: 0.95rem; line-height: 1.6; margin-bottom: 30px; }
         .disclaimer-container {
             border-top: 1px solid rgba(255, 255, 255, 0.08); padding-top: 25px;
-            font-size: 0.8rem; color: rgba(255, 255, 255, 0.3); text-align: justify;
+            font-size: 0.75rem; color: rgba(255, 255, 255, 0.3);
         }
     </style>
 </head>
@@ -192,7 +195,7 @@ def home():
 
         <div id="resultArea">
             <div class="answer-box" id="aiAnswer"></div>
-            <div class="related-title">Related Questions:</div>
+            <div class="related-title">FOLLOW-UP QUESTIONS:</div>
             <div id="relatedQuestions"></div>
         </div>
 
@@ -201,11 +204,11 @@ def home():
         </div>
     </div>
 
-    <div class="footer-section">
+     <div class="footer-section">
         <div class="about-title">About RuleMate India</div>
         <p class="about-text">RuleMate India helps people understand Indian government rules, laws, fines and procedures in simple language.</p>
         <div class="disclaimer-container">
-            <strong>Disclaimer:</strong> This website provides general information for educational purposes only. It is not legal advice. Always verify with official sources.
+            <strong>Disclaimer:</strong> This website provides general information on Indian government rules and laws for educational purposes only. It is not legal advice. Laws and rules may change. Always verify with official government notifications or consult a qualified professional. 
         </div>
     </div>
 
@@ -221,12 +224,10 @@ def home():
 
             btn.disabled = true;
             btn.innerText = "Processing...";
-            
-            // Step 1: Fade out the current answer box
             aiAnswer.style.opacity = "0";
             
             setTimeout(() => {
-                aiAnswer.innerHTML = '<div class="loading-pulse">Consulting Indian Regulations...</div>';
+                aiAnswer.innerHTML = '<div class="loading-pulse">Searching official codes...</div>';
                 aiAnswer.style.opacity = "1";
                 resultArea.style.display = "block";
             }, 400);
@@ -239,19 +240,15 @@ def home():
                 });
                 const data = await response.json();
                 
-                // Step 2: Fade out the loader
                 aiAnswer.style.opacity = "0";
                 
                 setTimeout(() => {
-                    // Step 3: Insert new answer and fade in
                     aiAnswer.innerText = data.answer;
                     aiAnswer.style.opacity = "1";
-                    
                     relatedBox.innerHTML = "";
                     data.related.forEach(q => {
                         const div = document.createElement('div');
                         div.className = 'related-q';
-                        // Strip serial numbers/bullets from strings
                         let cleanQ = q.replace(/^\d+[\.\)\s]+/, '');
                         div.innerText = cleanQ;
                         div.onclick = () => { 
