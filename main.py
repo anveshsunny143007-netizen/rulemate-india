@@ -1,5 +1,6 @@
 import os
 import re
+import sqlite3
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse, Response
 from pydantic import BaseModel
@@ -10,8 +11,19 @@ from openai import OpenAI
 load_dotenv()
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 app = FastAPI()
-# Temporary storage for generated pages
-generated_pages = {}
+# Create SQLite database
+conn = sqlite3.connect("rulemate.db", check_same_thread=False)
+cursor = conn.cursor()
+
+cursor.execute("""
+CREATE TABLE IF NOT EXISTS questions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    question TEXT,
+    answer TEXT,
+    slug TEXT UNIQUE
+)
+""")
+conn.commit()
 
 SYSTEM_PROMPT = """
 You are an Indian Government Rules Assistant.
@@ -67,6 +79,17 @@ def ask_rule(q: Question):
 
     answer = response.choices[0].message.content
     slug = slugify(q.question)
+    # Save to database if not already saved
+cursor.execute("SELECT * FROM questions WHERE slug=?", (slug,))
+existing = cursor.fetchone()
+
+if not existing:
+    cursor.execute(
+        "INSERT INTO questions (question, answer, slug) VALUES (?, ?, ?)",
+        (q.question, answer, slug)
+    )
+    conn.commit()
+
 
     # Store in memory
     generated_pages[slug] = {
@@ -307,8 +330,48 @@ def home():
 @app.get("/{slug}", response_class=HTMLResponse)
 def dynamic_page(slug: str):
 
-    if slug not in generated_pages:
+    cursor.execute("SELECT question, answer FROM questions WHERE slug=?", (slug,))
+    row = cursor.fetchone()
+
+    if not row:
         return home()
+
+    question, answer = row
+
+    return f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>{question} | RuleMate India</title>
+        <meta name="description" content="{question} explained simply under Indian law.">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <style>
+            body {{
+                font-family: Arial;
+                max-width: 800px;
+                margin: 40px auto;
+                line-height: 1.6;
+            }}
+            h1 {{
+                color: #1d4ed8;
+            }}
+            .answer {{
+                white-space: pre-wrap;
+                background: #f3f4f6;
+                padding: 20px;
+                border-radius: 10px;
+            }}
+        </style>
+    </head>
+    <body>
+        <h1>{question}</h1>
+        <div class="answer">{answer}</div>
+        <br>
+        <a href="/">⬅ Back to Home</a>
+    </body>
+    </html>
+    """
+
 
     page = generated_pages[slug]
 
@@ -328,6 +391,7 @@ def dynamic_page(slug: str):
     </body>
     </html>
     """
+
 
 
 
