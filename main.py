@@ -76,110 +76,119 @@ def home():
     <title>RuleMate India | Indian Government Rules Assistant</title>
     <style>
         :root {
-            --primary-blue: #2563eb;
             --india-saffron: #FF9933;
+            --india-white: #FFFFFF;
             --india-green: #138808;
-            --glass-white: rgba(255, 255, 255, 0.95);
+            --india-blue: #000080;
+            --primary-blue: #2563eb;
         }
 
         body {
             margin: 0; padding: 0; min-height: 100vh;
             display: flex; flex-direction: column; align-items: center;
-            background-color: #f8fafc;
-            font-family: 'Inter', -apple-system, sans-serif;
-            overflow-x: hidden; position: relative;
-        }
-
-        /* DYNAMIC TRICOLOR BACKGROUND */
-        .bg-layer {
-            position: fixed; width: 100%; height: 100%; top: 0; left: 0; z-index: -2;
-            background: 
-                radial-gradient(circle at 0% 0%, rgba(255, 153, 51, 0.1) 0%, transparent 40%),
-                radial-gradient(circle at 100% 100%, rgba(19, 136, 8, 0.1) 0%, transparent 40%);
-        }
-
-        /* ASHOKA CHAKRA - Code-based Watermark */
-        .chakra-watermark {
-            position: fixed; top: 10%; left: -100px; width: 400px; height: 400px;
-            opacity: 0.03; z-index: -1; pointer-events: none;
-        }
-
-        /* HEADER */
-        .header { text-align: center; padding: 50px 20px; z-index: 10; }
-        .logo { font-size: 2.5rem; font-weight: 800; color: #0f172a; margin: 0; display: flex; align-items: center; justify-content: center; gap: 10px; }
-        .logo span.in { font-size: 1.1rem; color: #64748b; font-weight: 500; }
-        .logo span.india { color: var(--primary-blue); }
-        .subtitle { color: #64748b; font-size: 1.1rem; margin-top: 8px; }
-
-        /* 3D GLASS CARD */
-        .card-container { width: 100%; max-width: 800px; padding: 0 20px; box-sizing: border-box; }
-        .glass-card {
-            background: var(--glass-white);
-            backdrop-filter: blur(20px);
-            border-radius: 32px;
-            padding: 40px;
-            border: 1px solid rgba(255, 255, 255, 1);
-            box-shadow: 
-                0 20px 50px rgba(0, 0, 0, 0.05),
-                0 1px 3px rgba(0, 0, 0, 0.01);
+            background-color: #f0f4f8;
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
             position: relative;
-            transform: perspective(1000px) rotateX(1deg);
         }
 
-        /* MONUMENT GRAPHICS (Inline SVGs for high speed/no copyright) */
-        .monument-icon { position: absolute; bottom: 10px; width: 100px; opacity: 0.1; pointer-events: none; }
-        .left-mon { left: 30px; }
-        .right-mon { right: 30px; }
+        /* VIBRANT TRICOLOR BACKGROUND MESH */
+        .background-mesh {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: -2;
+            background: 
+                radial-gradient(at 0% 0%, rgba(255, 153, 51, 0.15) 0px, transparent 50%),
+                radial-gradient(at 100% 0%, rgba(37, 99, 235, 0.1) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(19, 136, 8, 0.15) 0px, transparent 50%),
+                radial-gradient(at 0% 100%, rgba(37, 99, 235, 0.1) 0px, transparent 50%);
+        }
 
-        /* FORM ELEMENTS */
+        /* DECORATIVE WAVES */
+        .wave {
+            position: fixed; width: 200%; height: 400px; z-index: -1; opacity: 0.4;
+            left: -50%; filter: blur(60px); pointer-events: none;
+        }
+        .wave-top { top: -200px; background: var(--india-saffron); border-radius: 40%; transform: rotate(-5deg); }
+        .wave-bottom { bottom: -200px; background: var(--india-green); border-radius: 43%; transform: rotate(5deg); }
+
+        /* LOGO & HEADER */
+        .header { text-align: center; padding: 60px 20px 40px; }
+        .logo { font-size: 3rem; font-weight: 800; color: #1e293b; letter-spacing: -1px; }
+        .logo span.in { font-size: 1.2rem; vertical-align: middle; color: #64748b; margin-right: 10px; }
+        .logo span.india { color: var(--primary-blue); }
+        .subtitle { color: #475569; font-size: 1.2rem; margin-top: 10px; }
+
+        /* HIGH-DEPTH GLASS CARD */
+        .card-container { width: 100%; max-width: 850px; padding: 0 20px; box-sizing: border-box; perspective: 1000px; }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(20px);
+            border-radius: 35px;
+            padding: 50px;
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            box-shadow: 
+                0 30px 60px rgba(0, 0, 0, 0.08),
+                inset 0 0 0 1px rgba(255, 255, 255, 0.5);
+            position: relative;
+            transform: rotateX(1deg);
+        }
+
+        /* MONUMENT SVGS */
+        .monument { position: absolute; bottom: 20px; width: 120px; opacity: 0.08; pointer-events: none; fill: #1e293b; }
+        .mon-left { left: 40px; }
+        .mon-right { right: 40px; }
+
+        /* INPUTS */
         #userInput {
-            width: 100%; background: #f1f5f9; border: 2px solid transparent;
-            border-radius: 16px; padding: 22px; color: #1e293b; font-size: 1.1rem;
+            width: 100%; background: #f1f5f9; border: 1px solid #e2e8f0;
+            border-radius: 18px; padding: 24px; color: #1e293b; font-size: 1.1rem;
             margin-bottom: 25px; box-sizing: border-box; outline: none;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.03);
+        }
+        .btn-ask {
+            width: 100%; background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            color: white; border: none; padding: 22px; border-radius: 18px;
+            font-size: 1.3rem; font-weight: 700; cursor: pointer;
+            box-shadow: 0 15px 35px rgba(37, 99, 235, 0.3);
             transition: all 0.3s ease;
         }
-        #userInput:focus { border-color: #bfdbfe; background: #fff; }
+        .btn-ask:hover { transform: translateY(-3px); box-shadow: 0 20px 45px rgba(37, 99, 235, 0.4); }
 
-        .btn-ask {
-            width: 100%; 
-            background: linear-gradient(90deg, #3b82f6 0%, #1d4ed8 100%);
-            color: white; border: none; padding: 20px; border-radius: 16px; 
-            font-size: 1.2rem; font-weight: 700; cursor: pointer;
-            box-shadow: 0 10px 25px rgba(37, 99, 235, 0.3);
-            transition: transform 0.2s;
-        }
-        .btn-ask:hover { transform: translateY(-2px); filter: brightness(1.1); }
-
-        .check-tag {
-            display: inline-flex; margin-top: 30px; padding: 10px 20px;
-            border-radius: 100px; background: #eff6ff; color: #1d4ed8;
-            font-size: 0.85rem; font-weight: 600; border: 1px solid #dbeafe;
+        .tagline {
+            display: inline-flex; align-items: center; margin-top: 35px;
+            padding: 12px 25px; border-radius: 100px; background: rgba(37, 99, 235, 0.05);
+            color: #1e40af; font-size: 0.9rem; font-weight: 600; border: 1px solid rgba(37,99,235,0.1);
         }
 
-        /* RESULTS AREA */
-        #resultArea { margin-top: 30px; display: none; text-align: left; animation: fadeIn 0.5s; }
-        .answer-box { background: #fff; border: 1px solid #e2e8f0; border-radius: 20px; padding: 30px; line-height: 1.7; color: #334155; }
-        .related-title { font-weight: 700; margin: 25px 0 10px; font-size: 0.9rem; color: #94a3b8; letter-spacing: 1px; }
-        .related-q { background: #f8fafc; padding: 15px; border-radius: 12px; margin-bottom: 10px; cursor: pointer; border: 1px solid #e2e8f0; }
-        .related-q:hover { background: #eff6ff; border-color: #3b82f6; color: #2563eb; }
+        /* ASHOKA CHAKRA BG */
+        .chakra-bg {
+            position: fixed; top: 15%; left: -150px; width: 500px; height: 500px;
+            opacity: 0.03; z-index: -1; transform: rotate(15deg);
+        }
 
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-        .footer { text-align: center; padding: 60px 20px; color: #94a3b8; font-size: 0.9rem; }
+        .footer { text-align: center; padding: 80px 20px; max-width: 800px; margin: 0 auto; }
+        .footer h3 { color: #1e293b; margin-bottom: 15px; }
+        .footer p { color: #64748b; line-height: 1.6; }
     </style>
 </head>
 <body>
+    <div class="background-mesh"></div>
+    <div class="wave wave-top"></div>
+    <div class="wave wave-bottom"></div>
 
-    <div class="bg-layer"></div>
-
-    <svg class="chakra-watermark" viewBox="0 0 100 100">
-        <circle cx="50" cy="50" r="45" fill="none" stroke="currentColor" stroke-width="0.5"/>
-        <circle cx="50" cy="50" r="8" fill="none" stroke="currentColor" stroke-width="0.5"/>
-        <script>
-            for(let i=0; i<24; i++) {
-                document.write(`<line x1="50" y1="50" x2="${50 + 45*Math.cos(i*15*Math.PI/180)}" y2="${50 + 45*Math.sin(i*15*Math.PI/180)}" stroke="currentColor" stroke-width="0.2"/>`);
-            }
-        </script>
+    <svg class="chakra-bg" viewBox="0 0 100 100">
+        <circle cx="50" cy="50" r="45" fill="none" stroke="#000080" stroke-width="1"/>
+        <circle cx="50" cy="50" r="5" fill="#000080"/>
+        <g stroke="#000080" stroke-width="0.5">
+            <script>
+                for(let i=0; i<24; i++) {
+                    let angle = i * 15 * (Math.PI/180);
+                    let x2 = 50 + 45 * Math.cos(angle);
+                    let y2 = 50 + 45 * Math.sin(angle);
+                    document.write(`<line x1="50" y1="50" x2="${x2}" y2="${y2}" />`);
+                }
+            </script>
+        </g>
     </svg>
 
     <div class="header">
@@ -189,34 +198,26 @@ def home():
 
     <div class="card-container">
         <div class="glass-card">
-            <svg class="monument-icon left-mon" viewBox="0 0 100 100" fill="currentColor">
-                <path d="M20 90h60v-5H20v5zm10-10h40V40L50 30 30 40v40zm5-30h30v25H35V50z"/>
-            </svg>
-            <svg class="monument-icon right-mon" viewBox="0 0 100 100" fill="currentColor">
-                <path d="M45 90h10V20l-5-10-5 10v70zm2-60h6v2h-6v-2zm0 10h6v2h-6v-2z"/>
-            </svg>
+            <svg class="monument mon-left" viewBox="0 0 24 24"><path d="M5 21h14v-2H5v2zm2-4h10V9l-5-4-5 4v8zm3-6h4v4h-4v-4z"/></svg>
+            <svg class="monument mon-right" viewBox="0 0 24 24"><path d="M11 21h2V6l-1-3-1 3v15zM9 21h1v-2H9v2zm5 0h1v-2h-1v2z"/></svg>
 
-            <input type="text" id="userInput" placeholder="Ex: What are the documents required for a PAN card?">
+            <input type="text" id="userInput" placeholder="Example: What are the traffic rules for 2-wheelers?">
             <button id="askBtn" class="btn-ask" onclick="handleAsk()">Ask</button>
 
-            <div id="resultArea">
-                <div class="answer-box" id="aiAnswer"></div>
-                <div class="related-title">Related Questions:</div>
-                <div id="relatedQuestions"></div>
+            <div id="resultArea" style="display:none; margin-top:30px;">
+                <div id="aiAnswer" style="background:#fff; padding:25px; border-radius:20px; border:1px solid #e2e8f0; line-height:1.7;"></div>
+                <div id="relatedQuestions" style="margin-top:20px;"></div>
             </div>
 
             <div style="text-align: center;">
-                <div class="check-tag">✓ Clarifying Indian regulations through an educational lens.</div>
+                <div class="tagline">✓ Clarifying Indian regulations through an educational lens.</div>
             </div>
         </div>
     </div>
 
-    <div class="footer-section">
-        <div class="about-title">About RuleMate India</div>
-        <p class="about-text">RuleMate India helps people understand Indian government rules, laws, fines and procedures in simple language.</p>
-        <div class="disclaimer-container">
-            <strong>Disclaimer:</strong> This website provides general information on Indian government rules and laws for educational purposes only. It is not legal advice. Laws and rules may change. Always verify with official government notifications or consult a qualified professional. 
-        </div>
+    <div class="footer">
+        <h3>About RuleMate India</h3>
+        <p>RuleMate India helps people understand Indian government rules, laws, and procedures in simple language. This platform is for educational purposes only and does not constitute legal advice.</p>
     </div>
 
     <script>
@@ -230,8 +231,8 @@ def home():
             if (queryInput.value.trim() === "") return;
 
             btn.disabled = true;
-            btn.innerText = "Analyzing...";
-            aiAnswer.innerHTML = "Fetching official rules...";
+            btn.innerText = "Processing...";
+            aiAnswer.innerHTML = "Consulting official records...";
             resultArea.style.display = "block";
             
             try {
@@ -243,23 +244,18 @@ def home():
                 const data = await response.json();
                 
                 aiAnswer.innerText = data.answer;
-                relatedBox.innerHTML = "";
+                relatedBox.innerHTML = '<p style="font-weight:700; color:#64748b; margin:20px 0 10px;">RELATED:</p>';
                 data.related.forEach(q => {
                     const div = document.createElement('div');
-                    div.className = 'related-q';
-                    div.innerText = q.replace(/^\d+[\.\)\s]+/, '');
-                    div.onclick = () => { 
-                        queryInput.value = div.innerText; 
-                        handleAsk(); 
-                        window.scrollTo({ top: 0, behavior: 'smooth' }); 
-                    };
+                    div.style = "background:#f8fafc; padding:15px; border-radius:12px; margin-bottom:8px; cursor:pointer; border:1px solid #e2e8f0;";
+                    div.innerText = q;
+                    div.onclick = () => { queryInput.value = q; handleAsk(); };
                     relatedBox.appendChild(div);
                 });
             } catch (err) {
-                aiAnswer.innerText = "Error connecting to server.";
+                aiAnswer.innerText = "Connection error. Please try again.";
             } finally {
-                btn.disabled = false;
-                btn.innerText = "Ask";
+                btn.disabled = false; btn.innerText = "Ask";
             }
         }
     </script>
@@ -270,3 +266,4 @@ def home():
 @app.get("/{slug}", response_class=HTMLResponse)
 def dynamic_page(slug: str):
     return home()
+
