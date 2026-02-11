@@ -131,66 +131,112 @@ def ask_rule(q: QuestionRequest):
 # We separate the CSS to avoid f-string confusion
 CSS_STYLE = """
 <style>
-    body {
-        margin: 0; padding: 0; min-height: 100vh;
-        display: flex; flex-direction: column; align-items: center;
-        background: radial-gradient(circle at 50% -10%, #1a1b3a 0%, #030414 70%);
-        background-color: #030414; color: #ffffff;
-        font-family: 'Inter', -apple-system, sans-serif;
-        padding: 40px 20px;
-    }
-    .logo-container { display: flex; align-items: center; gap: 10px; margin-bottom: 5px; cursor: pointer; }
-    .flag-emoji { font-size: 2rem; }
-    h1 { font-size: 2.8rem; font-weight: 800; margin: 0; letter-spacing: -0.04em; }
-    .hero-subtitle { color: rgba(255, 255, 255, 0.5); font-size: 1.1rem; margin-bottom: 35px; text-align: center; }
-    
-    .glass-card {
-        background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%);
-        backdrop-filter: blur(25px);
-        border-top: 1px solid rgba(255, 255, 255, 0.3);
-        border-left: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 24px;
-        padding: 40px; width: 100%; max-width: 720px;
-        box-shadow: 0 30px 60px rgba(0, 0, 0, 0.8);
-        margin-bottom: 50px; box-sizing: border-box;
-    }
+        body {
+            margin: 0; padding: 0; min-height: 100vh;
+            display: flex; flex-direction: column; align-items: center;
+            background: radial-gradient(circle at 50% -10%, #1a1b3a 0%, #030414 70%);
+            background-color: #030414; color: #ffffff;
+            font-family: 'Inter', -apple-system, sans-serif;
+            padding: 40px 20px;
+        }
+        .logo-container { display: flex; align-items: center; gap: 10px; margin-bottom: 5px; }
+        .flag-emoji { font-size: 2rem; }
+        h1 { font-size: 2.8rem; font-weight: 800; margin: 0; letter-spacing: -0.04em; }
+        .hero-subtitle { color: rgba(255, 255, 255, 0.5); font-size: 1.1rem; margin-bottom: 35px; text-align: center; }
+        
+        /* 3D METALLIC GLASS CARD */
+        .glass-card {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%);
+            background-image: radial-gradient(at 0% 0%, rgba(255,255,255,0.1) 0%, transparent 50%);
+            backdrop-filter: blur(25px);
+            border-top: 1px solid rgba(255, 255, 255, 0.3);
+            border-left: 1px solid rgba(255, 255, 255, 0.1);
+            border-bottom: 2px solid rgba(0, 0, 0, 0.6);
+            border-right: 2px solid rgba(0, 0, 0, 0.4);
+            border-radius: 24px;
+            padding: 40px; width: 100%; max-width: 720px;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255,255,255,0.05);
+            margin-bottom: 50px; box-sizing: border-box;
+        }
 
-    #userInput {
-        width: 100%; background: rgba(0, 0, 0, 0.5); border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 12px; padding: 20px; color: white; font-size: 1rem;
-        margin-bottom: 20px; box-sizing: border-box; outline: none;
-        box-shadow: inset 0 4px 12px rgba(0,0,0,0.5);
-    }
+        /* SUNKEN INPUT */
+        #userInput {
+            width: 100%; background: rgba(0, 0, 0, 0.5); border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 12px; padding: 20px; color: white; font-size: 1rem;
+            margin-bottom: 20px; box-sizing: border-box; outline: none;
+            box-shadow: inset 0 4px 12px rgba(0,0,0,0.9);
+        }
 
-    .btn-ask {
-        width: 100%; 
-        background: linear-gradient(to bottom, #6352c7 0%, #372b85 100%);
-        color: white; border: none; padding: 18px; border-radius: 12px;
-        font-size: 1.1rem; font-weight: 700; cursor: pointer;
-        border-bottom: 4px solid #1f1752; transition: all 0.1s;
-    }
+        /* FADED METALLIC BUTTON (Lowered Brightness) */
+        .btn-ask {
+            width: 100%; 
+            /* Desaturated "Deep Purple Steel" Gradient */
+            background: linear-gradient(to bottom, 
+                #6352c7 0%, 
+                #4e3eb3 45%, 
+                #44369e 50%, 
+                #372b85 100%);
+            color: rgba(255, 255, 255, 0.9); border: none;
+            padding: 18px; border-radius: 12px; font-size: 1.1rem; font-weight: 700;
+            cursor: pointer; position: relative;
+            
+            border-top: 1px solid rgba(255,255,255,0.2);
+            border-bottom: 5px solid #1f1752;
+            
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5);
+            transition: all 0.1s;
+        }
 
-    .btn-ask:active { transform: translateY(2px); border-bottom-width: 2px; }
+        .btn-ask:hover { 
+            filter: brightness(1.15); 
+            background: linear-gradient(to bottom, #6d5dd1 0%, #44369e 100%);
+        }
 
-    .loading-pulse {
-        animation: pulse 1.5s infinite; color: rgba(255,255,255,0.4); text-align: center;
-    }
-    @keyframes pulse { 0% {opacity: 0.4} 50% {opacity: 0.8} 100% {opacity: 0.4} }
+        .btn-ask:active {
+            transform: translateY(3px);
+            border-bottom: 2px solid #1f1752;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+        }
+        
+        /* PULSE ANIMATION */
+        @keyframes pulse-fade {
+            0% { opacity: 0.3; } 50% { opacity: 0.6; } 100% { opacity: 0.3; }
+        }
+        .loading-pulse {
+            animation: pulse-fade 1.5s infinite ease-in-out;
+            color: rgba(255, 255, 255, 0.4);
+            font-style: italic; text-align: center; padding: 20px;
+        }
 
-    .answer-box { 
-        background: rgba(0, 0, 0, 0.3); border-radius: 15px; padding: 25px; 
-        white-space: pre-wrap; line-height: 1.6; margin-top: 30px;
-    }
-    
-    .related-q { 
-        background: rgba(255,255,255,0.03); padding: 12px; border-radius: 10px;
-        margin-top: 10px; cursor: pointer; border: 1px solid rgba(255,255,255,0.05);
-        font-size: 0.9rem; transition: 0.2s;
-    }
-    .related-q:hover { background: rgba(255,255,255,0.1); }
+        #resultArea { margin-top: 30px; display: none; text-align: left; }
+        .answer-box { 
+            background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255,255,255,0.05); 
+            border-radius: 15px; padding: 25px; white-space: pre-wrap; line-height: 1.6;
+            box-shadow: inset 0 2px 10px rgba(0,0,0,0.6);
+            transition: opacity 0.4s ease-in-out;
+        }
+        
+        .related-title { margin-top: 25px; font-weight: 700; color: #6352c7; font-size: 0.9rem; }
+        .related-q { 
+            display: block; background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255,255,255,0.05);
+            padding: 12px 15px; border-radius: 10px; margin-top: 10px;
+            cursor: pointer; font-size: 0.85rem; transition: 0.2s; color: rgba(255,255,255,0.7);
+        }
+        .related-q:hover { background: rgba(255, 255, 255, 0.06); color: white; }
 
-    .footer-section { text-align: center; font-size: 0.8rem; color: rgba(255,255,255,0.3); margin-top: auto; }
-</style>
+        .check-tag {
+            display: inline-flex; margin-top: 25px; padding: 8px 18px;
+            border-radius: 100px; background: rgba(99, 82, 199, 0.08);
+            border: 1px solid rgba(99, 82, 199, 0.15); color: #7a68e8; font-size: 0.8rem;
+        }
+
+        .footer-section { text-align: center; max-width: 650px; margin-top: auto; }
+        .disclaimer-container {
+            border-top: 1px solid rgba(255, 255, 255, 0.08); padding-top: 25px;
+            font-size: 0.75rem; color: rgba(255, 255, 255, 0.3);
+        }
+    </style>
 """
 
 @app.get("/", response_class=HTMLResponse)
@@ -323,4 +369,5 @@ def dynamic_page(slug: str):
 </body>
 </html>
 """
+
 
