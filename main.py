@@ -10,6 +10,8 @@ from openai import OpenAI
 load_dotenv()
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 app = FastAPI()
+# Temporary storage for generated pages
+generated_pages = {}
 
 SYSTEM_PROMPT = """
 You are an Indian Government Rules Assistant.
@@ -56,22 +58,42 @@ def sitemap():
 def ask_rule(q: Question):
     response = client.chat.completions.create(
         model="gpt-4o-mini",
-        messages=[{"role": "system", "content": SYSTEM_PROMPT}, {"role": "user", "content": q.question}],
+        messages=[
+            {"role": "system", "content": SYSTEM_PROMPT},
+            {"role": "user", "content": q.question}
+        ],
         temperature=0.2
     )
+
     answer = response.choices[0].message.content
     slug = slugify(q.question)
-    
+
+    # Store in memory
+    generated_pages[slug] = {
+        "question": q.question,
+        "answer": answer
+    }
+
     related_response = client.chat.completions.create(
         model="gpt-4o-mini",
         messages=[
-            {"role": "system", "content": "Generate EXACTLY 4 short related questions about Indian laws. Return them as a simple list with one question per line. No serial numbers."},
+            {"role": "system", "content": "Generate EXACTLY 4 short related questions about Indian laws. Return them one per line."},
             {"role": "user", "content": f"Provide 4 follow-up questions for: {q.question}"}
         ],
         temperature=0.5
     )
-    related = [r.strip("- ").strip() for r in related_response.choices[0].message.content.split("\n") if r.strip()]
-    return {"answer": answer, "slug": slug, "related": related[:4]}
+
+    related = [
+        r.strip("- ").strip()
+        for r in related_response.choices[0].message.content.split("\n")
+        if r.strip()
+    ]
+
+    return {
+        "answer": answer,
+        "slug": slug,
+        "related": related[:4]
+    }
 
 @app.get("/", response_class=HTMLResponse)
 def home():
@@ -284,5 +306,28 @@ def home():
 # 4. Dynamic Route
 @app.get("/{slug}", response_class=HTMLResponse)
 def dynamic_page(slug: str):
-    return home()
+
+    if slug not in generated_pages:
+        return home()
+
+    page = generated_pages[slug]
+
+    return f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>{page['question']} | RuleMate India</title>
+        <meta name="description" content="{page['question']} explained in simple language.">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+    </head>
+    <body style="font-family: Arial; max-width: 800px; margin: 40px auto;">
+        <h1>{page['question']}</h1>
+        <pre style="white-space: pre-wrap;">{page['answer']}</pre>
+        <br><br>
+        <a href="/">← Back to Home</a>
+    </body>
+    </html>
+    """
+
+
 
