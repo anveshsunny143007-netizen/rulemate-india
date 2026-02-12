@@ -81,7 +81,6 @@ def sitemap():
     return Response(content=xml, media_type="application/xml")
 
 @app.post("/ask")
-@app.post("/ask")
 def ask_rule(q: Question):
 
     slug = slugify(q.question)
@@ -140,6 +139,7 @@ def home():
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <link rel="canonical" href="https://rulemate-india.onrender.com/{slug}">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RuleMate India</title>
@@ -319,7 +319,7 @@ def home():
                     data.related.forEach(q => {
                         const div = document.createElement('div');
                         div.className = 'related-q';
-                        let cleanQ = q.replace(/^\d+[\.\)\s]+/, '');
+                        let cleanQ = q.replace(/^\\d+[\\.\\)\\s]+/, '');
                         div.innerText = cleanQ;
                         div.onclick = () => { 
                             queryInput.value = cleanQ; 
@@ -402,7 +402,7 @@ def dynamic_page(slug: str):
 <script>
 window.onload = () => {{
     document.getElementById("resultArea").style.display = "block";
-    document.getElementById("aiAnswer").innerText = `{answer}`;
+    document.getElementById("aiAnswer").innerText = {json.dumps(answer)};
     document.getElementById("userInput").value = `{question}`;
 
     const relatedBox = document.getElementById("relatedQuestions");
@@ -412,6 +412,7 @@ window.onload = () => {{
 """
 
     return html.replace("</body>", inject + "</body>")
+
 
 
 
