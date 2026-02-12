@@ -86,7 +86,7 @@ def sitemap():
 {urls}
 </urlset>
 """
-    return Response(content=xml, media_type="application/xml")
+    return Response(content=xml.strip(), media_type="application/xml")
 
 @app.post("/ask")
 def ask_rule(q: Question):
@@ -419,6 +419,7 @@ window.onload = () => {{
 """
 
     return html.replace("</body>", inject + "</body>")
+
 
 
 
