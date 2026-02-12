@@ -59,13 +59,23 @@ def slugify(text):
 
 @app.get("/sitemap.xml", response_class=Response)
 def sitemap():
-    xml = """<?xml version="1.0" encoding="UTF-8"?>
+    cursor.execute("SELECT slug FROM pages")
+    rows = cursor.fetchall()
+
+    urls = ""
+    for r in rows:
+        urls += f"""
+        <url>
+            <loc>https://rulemate-india.onrender.com/{r[0]}</loc>
+        </url>
+        """
+
+    xml = f"""<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url>
-    <loc>https://rulemate-india.onrender.com/</loc>
-    <changefreq>daily</changefreq>
-    <priority>1.0</priority>
-  </url>
+<url>
+<loc>https://rulemate-india.onrender.com/</loc>
+</url>
+{urls}
 </urlset>
 """
     return Response(content=xml, media_type="application/xml")
@@ -339,7 +349,37 @@ def dynamic_page(slug: str):
     page = cursor.fetchone()
 
     if not page:
-        return home()
+
+    question = slug.replace("-", " ")
+
+    response = client.chat.completions.create(
+        model="gpt-4o-mini",
+        messages=[
+            {"role": "system", "content": SYSTEM_PROMPT},
+            {"role": "user", "content": question}
+        ],
+        temperature=0.2
+    )
+
+    answer = response.choices[0].message.content
+
+    rel = client.chat.completions.create(
+        model="gpt-4o-mini",
+        messages=[
+            {"role": "system", "content": "Generate 4 related questions about Indian laws."},
+            {"role": "user", "content": question}
+        ]
+    )
+
+    related_list = [r.strip("- ").strip() for r in rel.choices[0].message.content.split("\n") if r.strip()][:4]
+
+    cursor.execute(
+        "INSERT INTO pages (slug, question, answer, related) VALUES (?, ?, ?, ?)",
+        (slug, question, answer, json.dumps(related_list))
+    )
+    conn.commit()
+
+    page = (question, answer, json.dumps(related_list))
 
     question, answer, related_json = page
     related = json.loads(related_json) if related_json else []
@@ -468,3 +508,4 @@ def dynamic_page(slug: str):
 </body>
 </html>
 """
+
