@@ -10,8 +10,22 @@ from openai import OpenAI
 load_dotenv()
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 app = FastAPI()
-# Temporary storage for generated pages
-generated_pages = {}
+import sqlite3
+import json
+
+# Database setup
+conn = sqlite3.connect("rulemate.db", check_same_thread=False)
+cursor = conn.cursor()
+
+cursor.execute("""
+CREATE TABLE IF NOT EXISTS pages (
+    slug TEXT PRIMARY KEY,
+    question TEXT,
+    answer TEXT
+)
+""")
+
+conn.commit()
 
 SYSTEM_PROMPT = """
 You are an Indian Government Rules Assistant.
@@ -56,23 +70,32 @@ def sitemap():
 
 @app.post("/ask")
 def ask_rule(q: Question):
-    response = client.chat.completions.create(
-        model="gpt-4o-mini",
-        messages=[
-            {"role": "system", "content": SYSTEM_PROMPT},
-            {"role": "user", "content": q.question}
-        ],
-        temperature=0.2
-    )
 
-    answer = response.choices[0].message.content
     slug = slugify(q.question)
 
-    # Store in memory
-    generated_pages[slug] = {
-        "question": q.question,
-        "answer": answer
-    }
+    # Check if already exists
+    cursor.execute("SELECT answer FROM pages WHERE slug=?", (slug,))
+    existing = cursor.fetchone()
+
+    if existing:
+        answer = existing[0]
+    else:
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {"role": "system", "content": SYSTEM_PROMPT},
+                {"role": "user", "content": q.question}
+            ],
+            temperature=0.2
+        )
+
+        answer = response.choices[0].message.content
+
+        cursor.execute(
+            "INSERT INTO pages (slug, question, answer) VALUES (?, ?, ?)",
+            (slug, q.question, answer)
+        )
+        conn.commit()
 
     related_response = client.chat.completions.create(
         model="gpt-4o-mini",
@@ -307,26 +330,30 @@ def home():
 @app.get("/{slug}", response_class=HTMLResponse)
 def dynamic_page(slug: str):
 
-    if slug not in generated_pages:
+    cursor.execute("SELECT question, answer FROM pages WHERE slug=?", (slug,))
+    page = cursor.fetchone()
+
+    if not page:
         return home()
 
-    page = generated_pages[slug]
+    question, answer = page
 
     return f"""
     <!DOCTYPE html>
     <html>
     <head>
-        <title>{page['question']} | RuleMate India</title>
-        <meta name="description" content="{page['question']} explained in simple language.">
+        <title>{question} | RuleMate India</title>
+        <meta name="description" content="{question} explained in simple language.">
         <meta name="viewport" content="width=device-width, initial-scale=1">
     </head>
     <body style="font-family: Arial; max-width: 800px; margin: 40px auto;">
-        <h1>{page['question']}</h1>
-        <pre style="white-space: pre-wrap;">{page['answer']}</pre>
+        <h1>{question}</h1>
+        <pre style="white-space: pre-wrap;">{answer}</pre>
         <br><br>
         <a href="/">← Back to Home</a>
     </body>
     </html>
     """
+
 
 
