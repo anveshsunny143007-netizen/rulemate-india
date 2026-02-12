@@ -71,17 +71,20 @@ def sitemap():
     return Response(content=xml, media_type="application/xml")
 
 @app.post("/ask")
+@app.post("/ask")
 def ask_rule(q: Question):
 
     slug = slugify(q.question)
 
     # Check if already exists
-    cursor.execute("SELECT answer FROM pages WHERE slug=?", (slug,))
+    cursor.execute("SELECT answer, related FROM pages WHERE slug=?", (slug,))
     existing = cursor.fetchone()
 
     if existing:
         answer = existing[0]
+        related = json.loads(existing[1]) if existing[1] else []
     else:
+        # Generate answer
         response = client.chat.completions.create(
             model="gpt-4o-mini",
             messages=[
@@ -90,35 +93,35 @@ def ask_rule(q: Question):
             ],
             temperature=0.2
         )
-
         answer = response.choices[0].message.content
 
+        # Generate related
+        related_response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {"role": "system", "content": "Generate EXACTLY 4 short related questions about Indian laws. Return them one per line."},
+                {"role": "user", "content": f"Provide 4 follow-up questions for: {q.question}"}
+            ],
+            temperature=0.5
+        )
+
+        related = [
+            r.strip("- ").strip()
+            for r in related_response.choices[0].message.content.split("\n")
+            if r.strip()
+        ][:4]
+
+        # Store in DB
         cursor.execute(
             "INSERT INTO pages (slug, question, answer, related) VALUES (?, ?, ?, ?)",
-            (slug, q.question, answer, json.dumps(related[:4]))
+            (slug, q.question, answer, json.dumps(related))
         )
         conn.commit()
-
-
-    related_response = client.chat.completions.create(
-        model="gpt-4o-mini",
-        messages=[
-            {"role": "system", "content": "Generate EXACTLY 4 short related questions about Indian laws. Return them one per line."},
-            {"role": "user", "content": f"Provide 4 follow-up questions for: {q.question}"}
-        ],
-        temperature=0.5
-    )
-
-    related = [
-        r.strip("- ").strip()
-        for r in related_response.choices[0].message.content.split("\n")
-        if r.strip()
-    ]
 
     return {
         "answer": answer,
         "slug": slug,
-        "related": related[:4]
+        "related": related
     }
 
 @app.get("/", response_class=HTMLResponse)
@@ -329,7 +332,6 @@ def home():
 </html>
 """
 
-# 4. Dynamic Route
 @app.get("/{slug}", response_class=HTMLResponse)
 def dynamic_page(slug: str):
 
@@ -340,15 +342,30 @@ def dynamic_page(slug: str):
         return home()
 
     question, answer, related_json = page
+    related = json.loads(related_json) if related_json else []
+
+    # Generate related HTML using your SAME styling
+    related_html = ""
+    for q in related:
+        clean_q = q.replace('"', '').replace("'", "")
+        related_html += f"""
+            <div class="related-q">
+                <a href="/{slugify(clean_q)}" style="color:inherit; text-decoration:none;">
+                    {clean_q}
+                </a>
+            </div>
+        """
 
     return f"""
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{question} | RuleMate India</title>
     <meta name="description" content="{question} explained in simple language under Indian law.">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- SAME STYLE AS HOME -->
     <style>
         body {{
             margin: 0; padding: 0; min-height: 100vh;
@@ -358,15 +375,31 @@ def dynamic_page(slug: str):
             font-family: 'Inter', -apple-system, sans-serif;
             padding: 40px 20px;
         }}
-        .logo-container {{ display: flex; align-items: center; gap: 10px; margin-bottom: 5px; }}
+
+        .logo-container {{
+            display: flex; align-items: center; gap: 10px; margin-bottom: 5px;
+        }}
+
         .flag-emoji {{ font-size: 2rem; }}
-        h1 {{ font-size: 2.2rem; font-weight: 800; margin-bottom: 25px; text-align:center; }}
+
+        h1 {{
+            font-size: 2.2rem;
+            font-weight: 800;
+            margin-bottom: 25px;
+            text-align: center;
+        }}
 
         .glass-card {{
             background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%);
             backdrop-filter: blur(25px);
+            border-top: 1px solid rgba(255, 255, 255, 0.3);
+            border-left: 1px solid rgba(255, 255, 255, 0.1);
+            border-bottom: 2px solid rgba(0, 0, 0, 0.6);
+            border-right: 2px solid rgba(0, 0, 0, 0.4);
             border-radius: 24px;
-            padding: 40px; width: 100%; max-width: 800px;
+            padding: 40px;
+            width: 100%;
+            max-width: 720px;
             box-shadow: 0 30px 60px rgba(0, 0, 0, 0.8);
             box-sizing: border-box;
         }}
@@ -377,6 +410,29 @@ def dynamic_page(slug: str):
             padding: 25px;
             white-space: pre-wrap;
             line-height: 1.7;
+        }}
+
+        .related-title {{
+            margin-top: 30px;
+            font-weight: 700;
+            color: #6352c7;
+        }}
+
+        .related-q {{
+            display: block;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255,255,255,0.05);
+            padding: 12px 15px;
+            border-radius: 10px;
+            margin-top: 10px;
+            font-size: 0.85rem;
+            transition: 0.2s;
+            color: rgba(255,255,255,0.7);
+        }}
+
+        .related-q:hover {{
+            background: rgba(255, 255, 255, 0.06);
+            color: white;
         }}
 
         .back-link {{
@@ -391,6 +447,7 @@ def dynamic_page(slug: str):
         }}
     </style>
 </head>
+
 <body>
 
     <div class="logo-container">
@@ -401,18 +458,18 @@ def dynamic_page(slug: str):
     <div class="glass-card">
         <h1>{question}</h1>
         <div class="answer-box">{answer}</div>
+
+        <div class="related-title">Related Questions:</div>
+        {related_html}
+
         <a href="/" class="back-link">← Ask Another Question</a>
     </div>
-
-    <div class="related-title">Related Questions:</div>
-        <div id="relatedQuestions">
-        {related_html}
-    </div>
-
 
 </body>
 </html>
 """
+
+
 
 
 
