@@ -53,9 +53,17 @@ class Question(BaseModel):
 
 def slugify(text):
     text = text.lower()
+
+    # remove common useless words
+    text = re.sub(r'\b(is|are|was|were|do|does|did|can|could|should|would|will|shall)\b', '', text)
+
+    # remove symbols
     text = re.sub(r'[^a-z0-9 ]', '', text)
-    text = text.strip().replace(' ', '-')
-    return text
+
+    # remove extra spaces
+    text = re.sub(r'\s+', ' ', text).strip()
+
+    return text.replace(' ', '-')
 
 @app.get("/sitemap.xml", response_class=Response)
 def sitemap():
@@ -411,6 +419,7 @@ window.onload = () => {{
 """
 
     return html.replace("</body>", inject + "</body>")
+
 
 
 
