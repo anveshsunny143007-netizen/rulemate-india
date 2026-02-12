@@ -339,21 +339,72 @@ def dynamic_page(slug: str):
     question, answer = page
 
     return f"""
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <title>{question} | RuleMate India</title>
-        <meta name="description" content="{question} explained in simple language.">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-    </head>
-    <body style="font-family: Arial; max-width: 800px; margin: 40px auto;">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{question} | RuleMate India</title>
+    <meta name="description" content="{question} explained in simple language under Indian law.">
+    <style>
+        body {{
+            margin: 0; padding: 0; min-height: 100vh;
+            display: flex; flex-direction: column; align-items: center;
+            background: radial-gradient(circle at 50% -10%, #1a1b3a 0%, #030414 70%);
+            background-color: #030414; color: #ffffff;
+            font-family: 'Inter', -apple-system, sans-serif;
+            padding: 40px 20px;
+        }}
+        .logo-container {{ display: flex; align-items: center; gap: 10px; margin-bottom: 5px; }}
+        .flag-emoji {{ font-size: 2rem; }}
+        h1 {{ font-size: 2.2rem; font-weight: 800; margin-bottom: 25px; text-align:center; }}
+
+        .glass-card {{
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%);
+            backdrop-filter: blur(25px);
+            border-radius: 24px;
+            padding: 40px; width: 100%; max-width: 800px;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.8);
+            box-sizing: border-box;
+        }}
+
+        .answer-box {{
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            padding: 25px;
+            white-space: pre-wrap;
+            line-height: 1.7;
+        }}
+
+        .back-link {{
+            margin-top: 30px;
+            display: inline-block;
+            color: #7a68e8;
+            text-decoration: none;
+        }}
+
+        .back-link:hover {{
+            text-decoration: underline;
+        }}
+    </style>
+</head>
+<body>
+
+    <div class="logo-container">
+        <span class="flag-emoji">🇮🇳</span>
+        <h2>RuleMate India</h2>
+    </div>
+
+    <div class="glass-card">
         <h1>{question}</h1>
-        <pre style="white-space: pre-wrap;">{answer}</pre>
-        <br><br>
-        <a href="/">← Back to Home</a>
-    </body>
-    </html>
-    """
+        <div class="answer-box">{answer}</div>
+        <a href="/" class="back-link">← Ask Another Question</a>
+    </div>
+
+</body>
+</html>
+"""
+
 
 
 
