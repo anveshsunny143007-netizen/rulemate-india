@@ -396,117 +396,21 @@ def dynamic_page(slug: str):
             </div>
         """
 
-    return f"""
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>{question} | RuleMate India</title>
-    <meta name="description" content="{question} explained in simple language under Indian law.">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    html = home()
 
-    <!-- SAME STYLE AS HOME -->
-    <style>
-        body {{
-            margin: 0; padding: 0; min-height: 100vh;
-            display: flex; flex-direction: column; align-items: center;
-            background: radial-gradient(circle at 50% -10%, #1a1b3a 0%, #030414 70%);
-            background-color: #030414; color: #ffffff;
-            font-family: 'Inter', -apple-system, sans-serif;
-            padding: 40px 20px;
-        }}
+inject = f"""
+<script>
+window.onload = () => {{
+    document.getElementById("resultArea").style.display = "block";
+    document.getElementById("aiAnswer").innerText = `{answer}`;
+    document.getElementById("userInput").value = `{question}`;
 
-        .logo-container {{
-            display: flex; align-items: center; gap: 10px; margin-bottom: 5px;
-        }}
-
-        .flag-emoji {{ font-size: 2rem; }}
-
-        h1 {{
-            font-size: 2.2rem;
-            font-weight: 800;
-            margin-bottom: 25px;
-            text-align: center;
-        }}
-
-        .glass-card {{
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%);
-            backdrop-filter: blur(25px);
-            border-top: 1px solid rgba(255, 255, 255, 0.3);
-            border-left: 1px solid rgba(255, 255, 255, 0.1);
-            border-bottom: 2px solid rgba(0, 0, 0, 0.6);
-            border-right: 2px solid rgba(0, 0, 0, 0.4);
-            border-radius: 24px;
-            padding: 40px;
-            width: 100%;
-            max-width: 720px;
-            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.8);
-            box-sizing: border-box;
-        }}
-
-        .answer-box {{
-            background: rgba(0, 0, 0, 0.3);
-            border-radius: 15px;
-            padding: 25px;
-            white-space: pre-wrap;
-            line-height: 1.7;
-        }}
-
-        .related-title {{
-            margin-top: 30px;
-            font-weight: 700;
-            color: #6352c7;
-        }}
-
-        .related-q {{
-            display: block;
-            background: rgba(255, 255, 255, 0.02);
-            border: 1px solid rgba(255,255,255,0.05);
-            padding: 12px 15px;
-            border-radius: 10px;
-            margin-top: 10px;
-            font-size: 0.85rem;
-            transition: 0.2s;
-            color: rgba(255,255,255,0.7);
-        }}
-
-        .related-q:hover {{
-            background: rgba(255, 255, 255, 0.06);
-            color: white;
-        }}
-
-        .back-link {{
-            margin-top: 30px;
-            display: inline-block;
-            color: #7a68e8;
-            text-decoration: none;
-        }}
-
-        .back-link:hover {{
-            text-decoration: underline;
-        }}
-    </style>
-</head>
-
-<body>
-
-    <div class="logo-container">
-        <span class="flag-emoji">🇮🇳</span>
-        <h2>RuleMate India</h2>
-    </div>
-
-    <div class="glass-card">
-        <h1>{question}</h1>
-        <div class="answer-box">{answer}</div>
-
-        <div class="related-title">Related Questions:</div>
-        {related_html}
-
-        <a href="/" class="back-link">← Ask Another Question</a>
-    </div>
-
-</body>
-</html>
+    const relatedBox = document.getElementById("relatedQuestions");
+    relatedBox.innerHTML = `{related_html}`;
+}};
+</script>
 """
+
+return html.replace("</body>", inject + "</body>")
 
 
