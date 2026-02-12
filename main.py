@@ -383,7 +383,7 @@ def dynamic_page(slug: str):
 
     question, answer, related_json = page
     related = json.loads(related_json) if related_json else []
-
+    
     # Generate related HTML using your SAME styling
     related_html = ""
     for q in related:
@@ -398,7 +398,7 @@ def dynamic_page(slug: str):
 
     html = home()
 
-inject = f"""
+    inject = f"""
 <script>
 window.onload = () => {{
     document.getElementById("resultArea").style.display = "block";
@@ -411,6 +411,7 @@ window.onload = () => {{
 </script>
 """
 
-return html.replace("</body>", inject + "</body>")
+    return html.replace("</body>", inject + "</body>")
+
 
 
