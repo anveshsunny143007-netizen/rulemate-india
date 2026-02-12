@@ -5,6 +5,7 @@ from fastapi.responses import HTMLResponse, Response
 from pydantic import BaseModel
 from dotenv import load_dotenv
 from openai import OpenAI
+import json
 
 # 1. Configuration & Setup
 load_dotenv()
@@ -21,7 +22,8 @@ cursor.execute("""
 CREATE TABLE IF NOT EXISTS pages (
     slug TEXT PRIMARY KEY,
     question TEXT,
-    answer TEXT
+    answer TEXT,
+    related TEXT
 )
 """)
 
@@ -92,10 +94,11 @@ def ask_rule(q: Question):
         answer = response.choices[0].message.content
 
         cursor.execute(
-            "INSERT INTO pages (slug, question, answer) VALUES (?, ?, ?)",
-            (slug, q.question, answer)
+            "INSERT INTO pages (slug, question, answer, related) VALUES (?, ?, ?, ?)",
+            (slug, q.question, answer, json.dumps(related[:4]))
         )
         conn.commit()
+
 
     related_response = client.chat.completions.create(
         model="gpt-4o-mini",
@@ -330,13 +333,13 @@ def home():
 @app.get("/{slug}", response_class=HTMLResponse)
 def dynamic_page(slug: str):
 
-    cursor.execute("SELECT question, answer FROM pages WHERE slug=?", (slug,))
+    cursor.execute("SELECT question, answer, related FROM pages WHERE slug=?", (slug,))
     page = cursor.fetchone()
 
     if not page:
         return home()
 
-    question, answer = page
+    question, answer, related_json = page
 
     return f"""
 <!DOCTYPE html>
@@ -401,9 +404,16 @@ def dynamic_page(slug: str):
         <a href="/" class="back-link">← Ask Another Question</a>
     </div>
 
+    <div class="related-title">Related Questions:</div>
+        <div id="relatedQuestions">
+        {related_html}
+    </div>
+
+
 </body>
 </html>
 """
+
 
 
 
