@@ -338,11 +338,26 @@ def dynamic_page(slug: str):
     cursor.execute("SELECT question, answer, related FROM pages WHERE slug=?", (slug,))
     page = cursor.fetchone()
 
-    if not page:
-        return home()
+    # ---------- IF PAGE EXISTS ----------
+    if page:
+        question, answer, related_json = page
+        related_list = json.loads(related_json)
 
-    question, answer, related_json = page
-    related = json.loads(related_json) if related_json else []
+    # ---------- IF PAGE DOES NOT EXIST ----------
+    else:
+        question = slug.replace("-", " ")
+
+        # generate answer
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {"role": "system", "content": SYSTEM_PROMPT},
+                {"role": "user", "content": question}
+            ],
+            temperature=0.2
+        )
+
+        answer = response.choices[0].message.content
 
     # Generate related HTML using your SAME styling
     related_html = ""
@@ -468,6 +483,7 @@ def dynamic_page(slug: str):
 </body>
 </html>
 """
+
 
 
 
