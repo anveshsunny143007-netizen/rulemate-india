@@ -350,36 +350,36 @@ def dynamic_page(slug: str):
 
     if not page:
 
-    question = slug.replace("-", " ")
+        question = slug.replace("-", " ")
 
-    response = client.chat.completions.create(
-        model="gpt-4o-mini",
-        messages=[
-            {"role": "system", "content": SYSTEM_PROMPT},
-            {"role": "user", "content": question}
-        ],
-        temperature=0.2
-    )
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {"role": "system", "content": SYSTEM_PROMPT},
+                {"role": "user", "content": question}
+            ],
+            temperature=0.2
+        )
 
-    answer = response.choices[0].message.content
+        answer = response.choices[0].message.content
 
-    rel = client.chat.completions.create(
-        model="gpt-4o-mini",
-        messages=[
-            {"role": "system", "content": "Generate 4 related questions about Indian laws."},
-            {"role": "user", "content": question}
-        ]
-    )
+        rel = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {"role": "system", "content": "Generate 4 related questions about Indian laws."},
+                {"role": "user", "content": question}
+            ]
+        )
 
-    related_list = [r.strip("- ").strip() for r in rel.choices[0].message.content.split("\n") if r.strip()][:4]
+        related_list = [r.strip("- ").strip() for r in rel.choices[0].message.content.split("\n") if r.strip()][:4]
 
-    cursor.execute(
-        "INSERT INTO pages (slug, question, answer, related) VALUES (?, ?, ?, ?)",
-        (slug, question, answer, json.dumps(related_list))
-    )
-    conn.commit()
+        cursor.execute(
+            "INSERT INTO pages (slug, question, answer, related) VALUES (?, ?, ?, ?)",
+            (slug, question, answer, json.dumps(related_list))
+        )
+        conn.commit()
 
-    page = (question, answer, json.dumps(related_list))
+        page = (question, answer, json.dumps(related_list))
 
     question, answer, related_json = page
     related = json.loads(related_json) if related_json else []
@@ -508,4 +508,5 @@ def dynamic_page(slug: str):
 </body>
 </html>
 """
+
 
