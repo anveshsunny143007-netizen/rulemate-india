@@ -139,7 +139,6 @@ def home():
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <link rel="canonical" href="https://rulemate-india.onrender.com/{slug}">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RuleMate India</title>
@@ -412,6 +411,7 @@ window.onload = () => {{
 """
 
     return html.replace("</body>", inject + "</body>")
+
 
 
 
