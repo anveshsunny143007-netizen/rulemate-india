@@ -419,7 +419,7 @@ def dynamic_page(slug: str):
         try:
             meta_summary = answer.split("SHORT ANSWER:")[1].split("DETAILS:")[0].strip()
         except:
-        meta_summary = answer
+            meta_summary = answer
 
     # Clean meta summary
     meta_summary = meta_summary.replace("\n", " ").replace('"', '').strip()
@@ -456,6 +456,7 @@ window.onload = () => {{
 """
 
     return html.replace("</body>", inject + "</body>")
+
 
 
 
