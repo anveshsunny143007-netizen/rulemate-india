@@ -412,10 +412,25 @@ def dynamic_page(slug: str):
                 </a>
             </div>
         """
+    # Extract SHORT ANSWER for meta description
+    meta_summary = answer
+
+    if "SHORT ANSWER:" in answer:
+        try:
+            meta_summary = answer.split("SHORT ANSWER:")[1].split("DETAILS:")[0].strip()
+        except:
+        meta_summary = answer
+
+    # Clean meta summary
+    meta_summary = meta_summary.replace("\n", " ").replace('"', '').strip()
+
+    # Limit to 155 characters
+    meta_summary = meta_summary[:155]
+    
     # SEO HEAD CONTENT
     seo_head = f"""
         <title>{question.title()} | RuleMate India</title>
-        <meta name="description" content="{answer[:160].replace('"', '')}">
+        <meta name="description" content="{meta_summary}">
         <link rel="canonical" href="https://rulemate-india.onrender.com/{slug}">
     """
 
@@ -441,6 +456,7 @@ window.onload = () => {{
 """
 
     return html.replace("</body>", inject + "</body>")
+
 
 
 
