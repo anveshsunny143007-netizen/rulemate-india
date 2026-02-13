@@ -419,7 +419,7 @@ def dynamic_page(slug: str):
         <link rel="canonical" href="https://rulemate-india.onrender.com/{slug}">
     """
 
-    html = home().replace(html = home().replace(
+    html = home().replace(
         "<title>RuleMate India</title>",
         seo_head
     ).replace(
@@ -441,6 +441,7 @@ window.onload = () => {{
 """
 
     return html.replace("</body>", inject + "</body>")
+
 
 
 
