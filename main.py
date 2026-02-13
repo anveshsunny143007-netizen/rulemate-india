@@ -151,7 +151,7 @@ def ask_rule(q: Question):
         "related": related
     }
 
-@app.get("/", response_class=HTMLResponse)
+@app.api_route("/", methods=["GET", "HEAD"], response_class=HTMLResponse)
 def home():
     return """
 <!DOCTYPE html>
@@ -432,6 +432,7 @@ window.onload = () => {{
 """
 
     return html.replace("</body>", inject + "</body>")
+
 
 
 
