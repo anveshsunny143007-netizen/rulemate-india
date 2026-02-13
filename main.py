@@ -442,7 +442,27 @@ def dynamic_page(slug: str):
         f'<div class="answer-box" id="aiAnswer">{answer}</div>'
     )
 
-    inject = f"""
+    # Structured Data (FAQ Schema)
+structured_data = f"""
+<script type="application/ld+json">
+{{
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+        {{
+            "@type": "Question",
+            "name": "{question}",
+            "acceptedAnswer": {{
+                "@type": "Answer",
+                "text": "{meta_summary}"
+            }}
+        }}
+    ]
+}}
+</script>
+"""
+
+inject = f"""
 <script>
 window.onload = () => {{
     document.getElementById("resultArea").style.display = "block";
@@ -455,7 +475,8 @@ window.onload = () => {{
 </script>
 """
 
-    return html.replace("</body>", inject + "</body>")
+return html.replace("</body>", structured_data + inject + "</body>")
+
 
 
 
