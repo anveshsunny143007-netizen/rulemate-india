@@ -412,11 +412,20 @@ def dynamic_page(slug: str):
                 </a>
             </div>
         """
+    # SEO HEAD CONTENT
+    seo_head = f"""
+        <title>{question.title()} | RuleMate India</title>
+        <meta name="description" content="{answer[:160].replace('"', '')}">
+        <link rel="canonical" href="https://rulemate-india.onrender.com/{slug}">
+    """
 
-    html = home().replace(
-    '<div class="answer-box" id="aiAnswer"></div>',
-    f'<div class="answer-box" id="aiAnswer">{answer}</div>'
-)
+    html = home().replace(html = home().replace(
+        "<title>RuleMate India</title>",
+        seo_head
+    ).replace(
+        '<div class="answer-box" id="aiAnswer"></div>',
+        f'<div class="answer-box" id="aiAnswer">{answer}</div>'
+    )
 
     inject = f"""
 <script>
@@ -432,6 +441,7 @@ window.onload = () => {{
 """
 
     return html.replace("</body>", inject + "</body>")
+
 
 
 
