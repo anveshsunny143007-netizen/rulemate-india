@@ -403,7 +403,10 @@ def dynamic_page(slug: str):
             </div>
         """
 
-    html = home()
+    html = home().replace(
+    '<div class="answer-box" id="aiAnswer"></div>',
+    f'<div class="answer-box" id="aiAnswer">{answer}</div>'
+)
 
     inject = f"""
 <script>
@@ -419,6 +422,7 @@ window.onload = () => {{
 """
 
     return html.replace("</body>", inject + "</body>")
+
 
 
 
