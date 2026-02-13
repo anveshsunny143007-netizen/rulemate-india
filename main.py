@@ -88,6 +88,16 @@ def sitemap():
 """
     return Response(content=xml.strip(), media_type="application/xml")
 
+@app.get("/robots.txt", response_class=Response)
+def robots():
+    content = """
+User-agent: *
+Allow: /
+
+Sitemap: https://rulemate-india.onrender.com/sitemap.xml
+"""
+    return Response(content=content.strip(), media_type="text/plain")
+
 @app.post("/ask")
 def ask_rule(q: Question):
 
@@ -422,6 +432,7 @@ window.onload = () => {{
 """
 
     return html.replace("</body>", inject + "</body>")
+
 
 
 
