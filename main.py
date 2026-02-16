@@ -173,8 +173,8 @@ def ask_rule(q: Question):
 
         # Store in DB
         cursor.execute(
-            "INSERT INTO pages (slug, question, answer, related) VALUES (?, ?, ?, ?)",
-            (slug, q.question, answer, json.dumps(related))
+            "INSERT OR IGNORE INTO pages (slug, question, answer, related) VALUES (?, ?, ?, ?)",
+            (slug, question, answer, json.dumps(related_list))
         )
         conn.commit()
 
@@ -509,6 +509,7 @@ def dynamic_page(slug: str):
     """
 
     return html.replace("</body>", structured_data + inject + "</body>")
+
 
 
 
