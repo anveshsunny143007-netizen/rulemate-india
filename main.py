@@ -14,10 +14,6 @@ load_dotenv()
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 app = FastAPI()
 
-# 🔴 PASTE THIS BLOCK HERE
-from fastapi import Request
-from fastapi.responses import RedirectResponse
-
 @app.middleware("http")
 async def force_domain(request: Request, call_next):
     host = request.headers.get("host")
@@ -423,7 +419,7 @@ def dynamic_page(slug: str):
         related_list = [r.strip("- ").strip() for r in rel.choices[0].message.content.split("\n") if r.strip()][:4]
 
         cursor.execute(
-            "INSERT INTO pages (slug, question, answer, related) VALUES (?, ?, ?, ?)",
+            "INSERT OR IGNORE INTO pages (slug, question, answer, related) VALUES (?, ?, ?, ?)",
             (slug, question, answer, json.dumps(related_list))
         )
         conn.commit()
@@ -508,6 +504,7 @@ def dynamic_page(slug: str):
     """
 
     return html.replace("</body>", structured_data + inject + "</body>")
+
 
 
 
