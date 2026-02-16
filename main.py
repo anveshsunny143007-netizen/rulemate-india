@@ -27,14 +27,12 @@ async def force_domain(request: Request, call_next):
 
     return await call_next(request)
 
-# existing code continues
-import sqlite3
-import json
+import psycopg2
 
-# Database setup
-conn = sqlite3.connect("rulemate.db", check_same_thread=False)
+DATABASE_URL = os.getenv("DATABASE_URL")
+conn = psycopg2.connect(DATABASE_URL, sslmode="require")
 cursor = conn.cursor()
-
+    
 cursor.execute("""
 CREATE TABLE IF NOT EXISTS pages (
     slug TEXT PRIMARY KEY,
@@ -152,7 +150,7 @@ def ask_rule(q: Question):
     slug = slugify(q.question)
 
     # Check if already exists
-    cursor.execute("SELECT answer, related FROM pages WHERE slug=?", (slug,))
+    cursor.execute("SELECT answer, related FROM pages WHERE slug=%s", (slug,))
     existing = cursor.fetchone()
 
     if existing:
@@ -187,10 +185,12 @@ def ask_rule(q: Question):
         ][:4]
 
         # Store in DB
-        cursor.execute(
-            "INSERT OR IGNORE INTO pages (slug, question, answer, related) VALUES (?, ?, ?, ?)",
-            (slug, q.question, answer, json.dumps(related))
-        )
+        cursor.execute("""
+            INSERT INTO pages (slug, question, answer, related)
+            VALUES (%s, %s, %s, %s)
+            ON CONFLICT (slug) DO NOTHING
+            """, (slug, q.question, answer, json.dumps(related)))
+
         conn.commit()
 
     return {
@@ -410,7 +410,7 @@ def home():
 @app.get("/{slug}", response_class=HTMLResponse)
 def dynamic_page(slug: str):
 
-    cursor.execute("SELECT question, answer, related FROM pages WHERE slug=?", (slug,))
+    cursor.execute("SELECT question, answer, related FROM pages WHERE slug=%s", (slug,))
     page = cursor.fetchone()
 
     if not page:
@@ -438,10 +438,12 @@ def dynamic_page(slug: str):
 
         related_list = [r.strip("- ").strip() for r in rel.choices[0].message.content.split("\n") if r.strip()][:4]
 
-        cursor.execute(
-            "INSERT OR IGNORE INTO pages (slug, question, answer, related) VALUES (?, ?, ?, ?)",
-            (slug, question, answer, json.dumps(related_list))
-        )
+        cursor.execute("""
+            INSERT INTO pages (slug, question, answer, related)
+            VALUES (%s, %s, %s, %s)
+            ON CONFLICT (slug) DO NOTHING
+            """, (slug, question, answer, json.dumps(related_list)))
+
         conn.commit()
 
         page = (question, answer, json.dumps(related_list))
@@ -524,6 +526,7 @@ def dynamic_page(slug: str):
     """
 
     return html.replace("</body>", structured_data + inject + "</body>")
+
 
 
 
