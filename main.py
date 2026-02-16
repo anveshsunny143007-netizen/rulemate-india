@@ -128,27 +128,27 @@ Sitemap: https://rulemate.in/sitemap.xml
 
 @app.post("/ask")
 def ask_rule(q: Question):
-# STEP 1: AI relevance check
-check = client.chat.completions.create(
-    model="gpt-4o-mini",
-    messages=[
-        {
-            "role": "system",
-            "content": "Answer ONLY YES or NO. Is this question about Indian government rules, laws, fines, punishments, or official procedures?"
-        },
-        {"role": "user", "content": q.question}
-    ],
-    temperature=0
-)
+    # STEP 1: AI relevance check
+    check = client.chat.completions.create(
+        model="gpt-4o-mini",
+        messages=[
+            {
+                "role": "system",
+                "content": "Answer ONLY YES or NO. Is this question about Indian government rules, laws, fines, punishments, or official procedures?"
+            },
+            {"role": "user", "content": q.question}
+        ],
+        temperature=0
+    )
 
-decision = check.choices[0].message.content.strip().upper()
+    decision = check.choices[0].message.content.strip().upper()
 
-if "NO" in decision:
-    return {
-        "answer": "This website only answers questions about Indian government rules, laws, fines, and official procedures.",
-        "slug": "",
-        "related": []
-    }
+    if "NO" in decision:
+        return {
+            "answer": "This website only answers questions about Indian government rules, laws, fines, and official procedures.",
+            "slug": "",
+            "related": []
+        }
     slug = slugify(q.question)
 
     # Check if already exists
@@ -524,6 +524,7 @@ def dynamic_page(slug: str):
     """
 
     return html.replace("</body>", structured_data + inject + "</body>")
+
 
 
 
