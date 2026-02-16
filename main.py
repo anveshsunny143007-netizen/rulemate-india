@@ -74,17 +74,17 @@ def sitemap():
 
     urls = ""
     for r in rows:
-    slug = r[0]
+        slug = r[0]
 
-    # Skip non-content files
-    if slug.endswith((".ico", ".png", ".jpg", ".js", ".css")):
-        continue
+        # Skip non-content files
+        if slug.endswith((".ico", ".png", ".jpg", ".js", ".css")):
+            continue
 
-    urls += f"""
-    <url>
-        <loc>{base}/{slug}</loc>
-    </url>
-    """
+        urls += f"""
+        <url>
+            <loc>{base}/{slug}</loc>
+        </url>
+        """
 
     xml = f"""<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
@@ -487,6 +487,7 @@ def dynamic_page(slug: str):
     """
 
     return html.replace("</body>", structured_data + inject + "</body>")
+
 
 
 
