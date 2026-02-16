@@ -13,7 +13,6 @@ from fastapi.responses import RedirectResponse
 load_dotenv()
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 app = FastAPI()
-app = FastAPI()
 
 # 🔴 PASTE THIS BLOCK HERE
 from fastapi import Request
@@ -174,7 +173,7 @@ def ask_rule(q: Question):
         # Store in DB
         cursor.execute(
             "INSERT OR IGNORE INTO pages (slug, question, answer, related) VALUES (?, ?, ?, ?)",
-            (slug, question, answer, json.dumps(related_list))
+            (slug, q.question, answer, json.dumps(related))
         )
         conn.commit()
 
@@ -464,7 +463,7 @@ def dynamic_page(slug: str):
     seo_head = f"""
         <title>{question.title()} | RuleMate India</title>
         <meta name="description" content="{meta_summary}">
-        <link rel="canonical" href="https://rulemate-india.onrender.com/{slug}">
+        <link rel="canonical" href="https://rulemate.in/{slug}">
     """
 
     html = home().replace(
@@ -509,6 +508,7 @@ def dynamic_page(slug: str):
     """
 
     return html.replace("</body>", structured_data + inject + "</body>")
+
 
 
 
