@@ -6,11 +6,33 @@ from pydantic import BaseModel
 from dotenv import load_dotenv
 from openai import OpenAI
 import json
+from fastapi import Request
+from fastapi.responses import RedirectResponse
 
 # 1. Configuration & Setup
 load_dotenv()
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 app = FastAPI()
+app = FastAPI()
+
+# 🔴 PASTE THIS BLOCK HERE
+from fastapi import Request
+from fastapi.responses import RedirectResponse
+
+@app.middleware("http")
+async def force_domain(request: Request, call_next):
+    host = request.headers.get("host")
+
+    if host == "rulemate-india.onrender.com":
+        new_url = str(request.url).replace(
+            "rulemate-india.onrender.com",
+            "rulemate.in"
+        )
+        return RedirectResponse(url=new_url, status_code=301)
+
+    return await call_next(request)
+
+# existing code continues
 import sqlite3
 import json
 
@@ -487,6 +509,7 @@ def dynamic_page(slug: str):
     """
 
     return html.replace("</body>", structured_data + inject + "</body>")
+
 
 
 
