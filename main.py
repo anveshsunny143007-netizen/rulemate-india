@@ -70,20 +70,25 @@ def sitemap():
     cursor.execute("SELECT slug FROM pages")
     rows = cursor.fetchall()
 
+    base = "https://rulemate.in"
+
     urls = ""
     for r in rows:
         urls += f"""
         <url>
-            <loc>https://rulemate-india.onrender.com/{r[0]}</loc>
+            <loc>{base}/{r[0]}</loc>
         </url>
         """
 
     xml = f"""<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+
 <url>
-<loc>https://rulemate-india.onrender.com/</loc>
+<loc>{base}/</loc>
 </url>
+
 {urls}
+
 </urlset>
 """
     return Response(content=xml.strip(), media_type="application/xml")
@@ -94,7 +99,7 @@ def robots():
 User-agent: *
 Allow: /
 
-Sitemap: https://rulemate-india.onrender.com/sitemap.xml
+Sitemap: https://rulemate.in/sitemap.xml
 """
     return Response(content=content.strip(), media_type="text/plain")
 
@@ -476,6 +481,7 @@ def dynamic_page(slug: str):
     """
 
     return html.replace("</body>", structured_data + inject + "</body>")
+
 
 
 
