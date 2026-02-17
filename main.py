@@ -591,40 +591,58 @@ def dynamic_page(slug: str):
     return html.replace("</body>", structured_data + inject + "</body>")
 
 
-@app.get("/traffic-rules-india", response_class=HTMLResponse)
-def traffic_rules_page():
+@app.get("/category/{category}", response_class=HTMLResponse)
+def category_page(category: str):
 
-    cursor.execute("""
-        SELECT slug, question FROM pages
-        WHERE question ILIKE '%fine%'
-           OR question ILIKE '%traffic%'
-           OR question ILIKE '%driving%'
-           OR question ILIKE '%helmet%'
-           OR question ILIKE '%seatbelt%'
-           OR question ILIKE '%license%'
-        ORDER BY question
-    """)
+    category = category.lower().replace("-", " ")
 
+    cursor.execute("SELECT slug, question FROM pages")
     rows = cursor.fetchall()
 
-    links = ""
-    for slug, question in rows:
-        links += f'<li><a href="/{slug}">{question}</a></li>'
+    matched = []
 
-    html = f"""
-    <html>
-    <head>
-        <title>Traffic Rules India | RuleMate</title>
-        <meta name="description" content="Complete list of traffic fines, penalties and driving rules in India explained in simple language.">
-    </head>
-    <body style="font-family:Arial;padding:40px;">
-        <h1>Traffic Rules & Fines in India</h1>
-        <p>Simple explanations of Indian traffic laws.</p>
-        <ul>
-            {links}
-        </ul>
-    </body>
-    </html>
+    for slug, question in rows:
+        if category in question.lower():
+            matched.append((slug, question))
+
+    if not matched:
+        return HTMLResponse("<h2>No content found for this category yet.</h2>")
+
+    links_html = ""
+
+    for slug, question in matched:
+        links_html += f"""
+        <div class="related-q">
+            <a href="/{slug}" style="color:inherit; text-decoration:none;">
+                {question}
+            </a>
+        </div>
+        """
+
+    title = f"{category.title()} Rules in India"
+
+    seo_head = f"""
+        <title>{title} | RuleMate India</title>
+        <meta name="description" content="Complete guide about {category} rules, fines, penalties and laws in India.">
+        <link rel="canonical" href="https://rulemate.in/category/{category.replace(' ', '-')}">
     """
 
-    return HTMLResponse(html)
+    html = home().replace(
+        "<title>RuleMate India</title>",
+        seo_head
+    )
+
+    content = f"""
+    <script>
+    window.onload = () => {{
+        document.getElementById("resultArea").style.display = "block";
+        document.getElementById("aiAnswer").innerHTML = `
+        <h2>{title}</h2>
+        <p>Below are all important questions related to this topic:</p>
+        {links_html}
+        `;
+    }};
+    </script>
+    """
+
+    return html.replace("</body>", content + "</body>")
