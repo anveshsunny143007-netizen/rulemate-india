@@ -119,12 +119,28 @@ def sitemap():
 
     base = "https://rulemate.in"
 
-    urls = ""
-    for r in rows:
-        slug = r[0]
+    # 🚨 Block dangerous patterns
+    bad_words = [
+        ".env", "debug", "php", "aws", "config",
+        "login", "admin", "root", "sql", "backup",
+        "test", "tmp", "cache"
+    ]
 
-        # Skip non-content files
-        if slug.endswith((".ico", ".png", ".jpg", ".js", ".css")):
+    urls = ""
+
+    for r in rows:
+        slug = r[0].lower()
+
+        # Skip junk / dangerous slugs
+        if any(word in slug for word in bad_words):
+            continue
+
+        # Skip file-type slugs
+        if slug.endswith((".ico", ".png", ".jpg", ".jpeg", ".js", ".css", ".json")):
+            continue
+
+        # Skip very short or weird slugs
+        if len(slug) < 5 or "--" in slug:
             continue
 
         urls += f"""
@@ -440,6 +456,22 @@ def home():
 
 @app.get("/{slug}", response_class=HTMLResponse)
 def dynamic_page(slug: str):
+    # 🚨 BLOCK JUNK / HACKER SLUGS
+    bad_words = [
+        ".env", "debug", "php", "aws", "config",
+        "login", "admin", "root", "sql", "backup",
+        "test", "tmp", "cache"
+    ]
+
+    slug_lower = slug.lower()
+
+    # Block dangerous patterns
+    if any(word in slug_lower for word in bad_words):
+        return HTMLResponse(content="Page not found", status_code=404)
+
+    # Block weird slugs
+    if len(slug) < 5 or "--" in slug:
+        return HTMLResponse(content="Page not found", status_code=404)
 
     cursor.execute("SELECT question, answer, related FROM pages WHERE slug=%s", (slug,))
     page = cursor.fetchone()
@@ -557,6 +589,7 @@ def dynamic_page(slug: str):
     """
 
     return html.replace("</body>", structured_data + inject + "</body>")
+
 
 
 
