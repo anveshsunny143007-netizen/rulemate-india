@@ -101,25 +101,47 @@ def is_legal_question(question: str) -> bool:
     return "YES" in decision
 
 def detect_category(question: str) -> str:
-    q = question.lower()
+    response = client.chat.completions.create(
+        model="gpt-4o-mini",
+        temperature=0,
+        messages=[
+            {
+                "role": "system",
+                "content": """
+Classify the user's question into ONE of these categories ONLY:
 
-    categories = {
-        "traffic-rules-india": [
-            "traffic", "driving", "license", "helmet",
-            "seatbelt", "vehicle", "road", "speed",
-            "parking", "signal"
-        ],
-        "passport-rules": ["passport", "visa"],
-        "income-tax-rules": ["tax", "gst", "itr"],
-        "police-procedure": ["fir", "police", "arrest"],
-        "identity-documents": ["aadhaar", "pan", "voter id"]
-    }
+traffic-rules-india
+passport-rules
+income-tax-rules
+police-procedure
+identity-documents
+constitution-law
+general-laws
 
-    for category, words in categories.items():
-        if any(w in q for w in words):
-            return category
+Return ONLY the category name.
+No explanation.
+"""
+            },
+            {"role": "user", "content": question}
+        ]
+    )
 
-    return "general-laws"
+    category = response.choices[0].message.content.strip().lower()
+
+    allowed = [
+        "traffic-rules-india",
+        "passport-rules",
+        "income-tax-rules",
+        "police-procedure",
+        "identity-documents",
+        "constitution-law",
+        "general-laws"
+    ]
+
+    if category not in allowed:
+        return "general-laws"
+
+    return category
 
 def slugify(text):
     text = text.lower()
@@ -543,11 +565,13 @@ def dynamic_page(slug: str):
 
         related_list = [r.strip("- ").strip() for r in rel.choices[0].message.content.split("\n") if r.strip()][:4]
 
+        category = detect_category(question)
+
         cursor.execute("""
-            INSERT INTO pages (slug, question, answer, related)
-            VALUES (%s, %s, %s, %s)
-            ON CONFLICT (slug) DO NOTHING
-            """, (slug, question, answer, json.dumps(related_list)))
+        INSERT INTO pages (slug, question, answer, related, category)
+        VALUES (%s, %s, %s, %s, %s)
+        ON CONFLICT (slug) DO NOTHING
+        """, (slug, question, answer, json.dumps(related_list), category))
 
         conn.commit()
 
@@ -686,6 +710,7 @@ def category_page(category: str):
     """
 
     return html.replace("</body>", content + "</body>")
+
 
 
 
