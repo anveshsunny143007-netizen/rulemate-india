@@ -537,6 +537,9 @@ def dynamic_page(slug: str):
         page = (question, answer, json.dumps(related_list))
 
     question, answer, related_json = page
+    
+    # 🔥 REMOVE SERIAL NUMBERS FROM OLD QUESTIONS
+    clean_question = re.sub(r'^\d+[\.\)\s]+', '', question)
     related = json.loads(related_json) if related_json else []
     
     # Generate related HTML using your SAME styling
@@ -567,7 +570,7 @@ def dynamic_page(slug: str):
     
     # SEO HEAD CONTENT
     seo_head = f"""
-        <title>{question.title()} | RuleMate India</title>
+        <title>{clean_question.title()} | RuleMate India</title>
         <meta name="description" content="{meta_summary}">
         <link rel="canonical" href="https://rulemate.in/{slug}">
     """
@@ -589,7 +592,7 @@ def dynamic_page(slug: str):
         "mainEntity": [
             {{
                 "@type": "Question",
-                "name": "{question}",
+                "name": "{clean_question}",
                 "acceptedAnswer": {{
                     "@type": "Answer",
                     "text": "{meta_summary}"
@@ -605,7 +608,7 @@ def dynamic_page(slug: str):
     window.onload = () => {{
         document.getElementById("resultArea").style.display = "block";
         document.getElementById("aiAnswer").innerText = {json.dumps(answer)};
-        document.getElementById("userInput").value = `{question}`;
+        document.getElementById("userInput").value = `{clean_question}`;
 
         const relatedBox = document.getElementById("relatedQuestions");
         relatedBox.innerHTML = `{related_html}`;
@@ -666,5 +669,6 @@ def category_page(category: str):
     """
 
     return html.replace("</body>", content + "</body>")
+
 
 
