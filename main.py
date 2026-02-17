@@ -66,6 +66,7 @@ SOURCE:
 
 class Question(BaseModel):
     question: str
+
 def is_legal_question(question: str) -> bool:
     legal_keywords = [
         "fine", "penalty", "punishment", "law", "rule", "rules",
@@ -99,9 +100,7 @@ def is_legal_question(question: str) -> bool:
     decision = check.choices[0].message.content.strip().upper()
     return "YES" in decision
 
-def slugify(text):
-    def detect_category(question: str) -> str:
-
+def detect_category(question: str) -> str:
     q = question.lower()
 
     categories = {
@@ -121,6 +120,8 @@ def slugify(text):
             return category
 
     return "general-laws"
+
+def slugify(text):
     text = text.lower()
 
     # remove common useless words
@@ -691,6 +692,3 @@ def category_page(category: str):
     """
 
     return html.replace("</body>", content + "</body>")
-
-
-
