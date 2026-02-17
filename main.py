@@ -148,7 +148,18 @@ def ask_rule(q: Question):
             "related": []
         }
     slug = slugify(q.question)
+    # 🚨 FILTER BAD / JUNK URLS
+    bad_words = [
+        ".env", "debug", "php", "aws", "config",
+        "here", "related", "four", "certainly", "sure"
+    ]
 
+    if any(word in slug for word in bad_words):
+        return {
+            "answer": "Invalid query.",
+            "slug": "",
+            "related": []
+        }
     # Check if already exists
     cursor.execute("SELECT answer, related FROM pages WHERE slug=%s", (slug,))
     existing = cursor.fetchone()
@@ -526,6 +537,7 @@ def dynamic_page(slug: str):
     """
 
     return html.replace("</body>", structured_data + inject + "</body>")
+
 
 
 
