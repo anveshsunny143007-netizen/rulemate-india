@@ -602,7 +602,7 @@ def category_page(category: str):
     matched = []
 
     for slug, question in rows:
-    if category in question.lower():
+        if category in question.lower():
 
         # 🚨 skip self-link (IMPORTANT FIX)
         if slug == category.replace(" ", "-"):
@@ -651,4 +651,5 @@ def category_page(category: str):
     """
 
     return html.replace("</body>", content + "</body>")
+
 
