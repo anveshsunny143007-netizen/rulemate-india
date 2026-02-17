@@ -619,8 +619,10 @@ def category_page(category: str):
     for slug, question in rows:
         q_lower = question.lower()
 
-        # match ANY keyword
-        if any(word in q_lower for word in keywords):
+        score = sum(1 for word in keywords if word in q_lower)
+
+        # Only include if strong match
+        if score >= 2:
             matched.append((slug, question))
 
     if not matched:
@@ -628,6 +630,7 @@ def category_page(category: str):
 
     links_html = ""
 
+    matched.sort(key=lambda x: x[1])
     for slug, question in matched:
         clean_q = re.sub(r'^\d+[\.\)\s]+', '', question)
 
@@ -666,6 +669,4 @@ def category_page(category: str):
     """
 
     return html.replace("</body>", content + "</body>")
-
-
 
