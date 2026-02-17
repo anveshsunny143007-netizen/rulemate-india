@@ -139,6 +139,14 @@ def slugify(text):
 def sitemap():
     cursor.execute("SELECT slug FROM pages")
     rows = cursor.fetchall()
+    
+    # 🔥 GET ALL CATEGORIES
+    cursor.execute("""
+        SELECT DISTINCT category
+        FROM pages
+        WHERE category IS NOT NULL
+    """)
+    categories = cursor.fetchall()
 
     base = "https://rulemate.in"
 
@@ -150,7 +158,16 @@ def sitemap():
     ]
 
     urls = ""
+    # 🔥 ADD CATEGORY PAGES TO SITEMAP
+    for c in categories:
+        cat = c[0]
+        urls += f"""
+        <url>
+            <loc>{base}/category/{cat}</loc>
+        </url>
+        """
 
+    # 🔥 ADD QUESTION PAGES
     for r in rows:
         slug = r[0].lower()
 
@@ -669,6 +686,7 @@ def category_page(category: str):
     """
 
     return html.replace("</body>", content + "</body>")
+
 
 
 
