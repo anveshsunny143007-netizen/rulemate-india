@@ -604,11 +604,11 @@ def category_page(category: str):
     for slug, question in rows:
         if category in question.lower():
 
-        # 🚨 skip self-link (IMPORTANT FIX)
-        if slug == category.replace(" ", "-"):
-            continue
+			# 🚨 skip self-link (IMPORTANT FIX)
+			if slug == category.replace(" ", "-"):
+				continue
 
-        matched.append((slug, question))
+			matched.append((slug, question))
 
     if not matched:
         return HTMLResponse("<h2>No content found for this category yet.</h2>")
@@ -651,5 +651,3 @@ def category_page(category: str):
     """
 
     return html.replace("</body>", content + "</body>")
-
-
