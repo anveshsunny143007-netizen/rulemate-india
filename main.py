@@ -595,11 +595,21 @@ def dynamic_page(slug: str):
 def category_page(category: str):
 
     category = category.lower().replace("-", " ")
-    # Split category into keywords
-    keywords = [
-        w for w in category.split()
-        if w not in ["india", "rules", "rule", "law", "laws"]
-    ]
+
+    # SMART CATEGORY KEYWORDS
+    category_map = {
+        "traffic": [
+            "traffic", "helmet", "driving", "seatbelt",
+            "signal", "overspeed", "puc", "license",
+            "drunk", "parking", "lane"
+        ]
+    }
+
+    # Detect which category
+    keywords = []
+    for key, words in category_map.items():
+        if key in category:
+            keywords = words
 
     cursor.execute("SELECT slug, question FROM pages")
     rows = cursor.fetchall()
@@ -609,13 +619,8 @@ def category_page(category: str):
     for slug, question in rows:
         q_lower = question.lower()
 
-        # match if ANY keyword present
+        # match ANY keyword
         if any(word in q_lower for word in keywords):
-
-            # avoid linking category page itself
-            if slug == category.replace(" ", "-"):
-                continue
-
             matched.append((slug, question))
 
     if not matched:
@@ -624,8 +629,6 @@ def category_page(category: str):
     links_html = ""
 
     for slug, question in matched:
-
-         # remove numbering like "1.", "2)", "3 "
         clean_q = re.sub(r'^\d+[\.\)\s]+', '', question)
 
         links_html += f"""
@@ -663,5 +666,6 @@ def category_page(category: str):
     """
 
     return html.replace("</body>", content + "</body>")
+
 
 
