@@ -591,28 +591,40 @@ def dynamic_page(slug: str):
     return html.replace("</body>", structured_data + inject + "</body>")
 
 
+@app.get("/traffic-rules-india", response_class=HTMLResponse)
+def traffic_rules_page():
 
+    cursor.execute("""
+        SELECT slug, question FROM pages
+        WHERE question ILIKE '%fine%'
+           OR question ILIKE '%traffic%'
+           OR question ILIKE '%driving%'
+           OR question ILIKE '%helmet%'
+           OR question ILIKE '%seatbelt%'
+           OR question ILIKE '%license%'
+        ORDER BY question
+    """)
 
+    rows = cursor.fetchall()
 
+    links = ""
+    for slug, question in rows:
+        links += f'<li><a href="/{slug}">{question}</a></li>'
 
+    html = f"""
+    <html>
+    <head>
+        <title>Traffic Rules India | RuleMate</title>
+        <meta name="description" content="Complete list of traffic fines, penalties and driving rules in India explained in simple language.">
+    </head>
+    <body style="font-family:Arial;padding:40px;">
+        <h1>Traffic Rules & Fines in India</h1>
+        <p>Simple explanations of Indian traffic laws.</p>
+        <ul>
+            {links}
+        </ul>
+    </body>
+    </html>
+    """
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    return HTMLResponse(html)
