@@ -595,6 +595,8 @@ def dynamic_page(slug: str):
 def category_page(category: str):
 
     category = category.lower().replace("-", " ")
+    # Split category into keywords
+    keywords = category.split()
 
     cursor.execute("SELECT slug, question FROM pages")
     rows = cursor.fetchall()
@@ -602,9 +604,12 @@ def category_page(category: str):
     matched = []
 
     for slug, question in rows:
-        if category in question.lower():
+        q_lower = question.lower()
 
-            # 🚨 skip self-link (IMPORTANT FIX)
+        # match if ANY keyword present
+        if any(word in q_lower for word in keywords):
+
+            # avoid linking category page itself
             if slug == category.replace(" ", "-"):
                 continue
 
@@ -651,3 +656,4 @@ def category_page(category: str):
     """
 
     return html.replace("</body>", content + "</body>")
+
