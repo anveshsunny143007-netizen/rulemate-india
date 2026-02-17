@@ -65,6 +65,38 @@ SOURCE:
 
 class Question(BaseModel):
     question: str
+def is_legal_question(question: str) -> bool:
+    legal_keywords = [
+        "fine", "penalty", "punishment", "law", "rule", "rules",
+        "ipc", "section", "court", "judge", "constitution",
+        "legal", "rights", "act", "government", "license",
+        "permit", "procedure", "certificate", "apply",
+        "tax", "gst", "traffic", "driving", "offence",
+        "crime", "arrest", "bail"
+    ]
+
+    q = question.lower()
+
+    # Step 1: keyword check
+    for word in legal_keywords:
+        if word in q:
+            return True
+
+    # Step 2: fallback to AI check
+    check = client.chat.completions.create(
+        model="gpt-4o-mini",
+        messages=[
+            {
+                "role": "system",
+                "content": "Answer ONLY YES or NO. Is this question about Indian government rules, laws, constitution, legal system, or official procedures?"
+            },
+            {"role": "user", "content": question}
+        ],
+        temperature=0
+    )
+
+    decision = check.choices[0].message.content.strip().upper()
+    return "YES" in decision
 
 def slugify(text):
     text = text.lower()
@@ -126,27 +158,15 @@ Sitemap: https://rulemate.in/sitemap.xml
 
 @app.post("/ask")
 def ask_rule(q: Question):
-    # STEP 1: AI relevance check
-    check = client.chat.completions.create(
-        model="gpt-4o-mini",
-        messages=[
-            {
-                "role": "system",
-                "content": "Answer ONLY YES or NO. Is this question about Indian government rules, laws, fines, punishments, or official procedures?"
-            },
-            {"role": "user", "content": q.question}
-        ],
-        temperature=0
-    )
 
-    decision = check.choices[0].message.content.strip().upper()
-
-    if "NO" in decision:
+    # STEP 1: Smart legal filter
+    if not is_legal_question(q.question):
         return {
             "answer": "This website only answers questions about Indian government rules, laws, fines, and official procedures.",
             "slug": "",
             "related": []
         }
+        
     slug = slugify(q.question)
     # 🚨 FILTER BAD / JUNK URLS
     bad_words = [
@@ -537,6 +557,7 @@ def dynamic_page(slug: str):
     """
 
     return html.replace("</body>", structured_data + inject + "</body>")
+
 
 
 
