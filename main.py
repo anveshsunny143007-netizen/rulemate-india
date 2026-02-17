@@ -38,7 +38,8 @@ CREATE TABLE IF NOT EXISTS pages (
     slug TEXT PRIMARY KEY,
     question TEXT,
     answer TEXT,
-    related TEXT
+    related TEXT,
+    category TEXT
 )
 """)
 
@@ -99,6 +100,27 @@ def is_legal_question(question: str) -> bool:
     return "YES" in decision
 
 def slugify(text):
+    def detect_category(question: str) -> str:
+
+    q = question.lower()
+
+    categories = {
+        "traffic-rules-india": [
+            "traffic", "driving", "license", "helmet",
+            "seatbelt", "vehicle", "road", "speed",
+            "parking", "signal"
+        ],
+        "passport-rules": ["passport", "visa"],
+        "income-tax-rules": ["tax", "gst", "itr"],
+        "police-procedure": ["fir", "police", "arrest"],
+        "identity-documents": ["aadhaar", "pan", "voter id"]
+    }
+
+    for category, words in categories.items():
+        if any(w in q for w in words):
+            return category
+
+    return "general-laws"
     text = text.lower()
 
     # remove common useless words
@@ -232,11 +254,13 @@ def ask_rule(q: Question):
         ][:4]
 
         # Store in DB
+        category = detect_category(q.question)
+
         cursor.execute("""
-            INSERT INTO pages (slug, question, answer, related)
-            VALUES (%s, %s, %s, %s)
-            ON CONFLICT (slug) DO NOTHING
-            """, (slug, q.question, answer, json.dumps(related)))
+        INSERT INTO pages (slug, question, answer, related, category)
+        VALUES (%s, %s, %s, %s, %s)
+        ON CONFLICT (slug) DO NOTHING
+        """, (slug, q.question, answer, json.dumps(related), category))
 
         conn.commit()
 
@@ -596,7 +620,6 @@ def category_page(category: str):
 
     category = category.lower().replace("-", " ")
 
-    # SMART CATEGORY KEYWORDS
     category_map = {
         "traffic": [
             "traffic", "helmet", "driving", "seatbelt",
@@ -605,11 +628,13 @@ def category_page(category: str):
         ]
     }
 
-    # Detect which category
     keywords = []
     for key, words in category_map.items():
         if key in category:
             keywords = words
+
+    if not keywords:
+        return HTMLResponse("<h2>Category not supported yet.</h2>")
 
     cursor.execute("SELECT slug, question FROM pages")
     rows = cursor.fetchall()
@@ -621,16 +646,16 @@ def category_page(category: str):
 
         score = sum(1 for word in keywords if word in q_lower)
 
-        # Only include if strong match
+        # ⭐ FIXED LINE
         if score >= 2:
             matched.append((slug, question))
 
     if not matched:
         return HTMLResponse("<h2>No content found for this category yet.</h2>")
 
-    links_html = ""
-
     matched.sort(key=lambda x: x[1])
+
+    links_html = ""
     for slug, question in matched:
         clean_q = re.sub(r'^\d+[\.\)\s]+', '', question)
 
@@ -650,10 +675,7 @@ def category_page(category: str):
         <link rel="canonical" href="https://rulemate.in/category/{category.replace(' ', '-')}">
     """
 
-    html = home().replace(
-        "<title>RuleMate India</title>",
-        seo_head
-    )
+    html = home().replace("<title>RuleMate India</title>", seo_head)
 
     content = f"""
     <script>
@@ -669,5 +691,6 @@ def category_page(category: str):
     """
 
     return html.replace("</body>", content + "</body>")
+
 
 
