@@ -619,45 +619,20 @@ def dynamic_page(slug: str):
 @app.get("/category/{category}", response_class=HTMLResponse)
 def category_page(category: str):
 
-    category = category.lower().replace("-", " ")
+    cursor.execute("""
+        SELECT slug, question FROM pages
+        WHERE category=%s
+        ORDER BY question
+    """, (category,))
 
-    category_map = {
-        "traffic": [
-            "traffic", "helmet", "driving", "seatbelt",
-            "signal", "overspeed", "puc", "license",
-            "drunk", "parking", "lane"
-        ]
-    }
-
-    keywords = []
-    for key, words in category_map.items():
-        if key in category:
-            keywords = words
-
-    if not keywords:
-        return HTMLResponse("<h2>Category not supported yet.</h2>")
-
-    cursor.execute("SELECT slug, question FROM pages")
     rows = cursor.fetchall()
 
-    matched = []
-
-    for slug, question in rows:
-        q_lower = question.lower()
-
-        score = sum(1 for word in keywords if word in q_lower)
-
-        # ⭐ FIXED LINE
-        if score >= 2:
-            matched.append((slug, question))
-
-    if not matched:
+    if not rows:
         return HTMLResponse("<h2>No content found for this category yet.</h2>")
 
-    matched.sort(key=lambda x: x[1])
-
     links_html = ""
-    for slug, question in matched:
+
+    for slug, question in rows:
         clean_q = re.sub(r'^\d+[\.\)\s]+', '', question)
 
         links_html += f"""
@@ -668,12 +643,11 @@ def category_page(category: str):
         </div>
         """
 
-    title = category.title()
+    title = category.replace("-", " ").title()
 
     seo_head = f"""
         <title>{title} | RuleMate India</title>
-        <meta name="description" content="Complete guide about {category} rules, fines, penalties and laws in India.">
-        <link rel="canonical" href="https://rulemate.in/category/{category.replace(' ', '-')}">
+        <meta name="description" content="Complete guide about {title} rules, fines, penalties and laws in India.">
     """
 
     html = home().replace("<title>RuleMate India</title>", seo_head)
@@ -692,3 +666,5 @@ def category_page(category: str):
     """
 
     return html.replace("</body>", content + "</body>")
+
+
