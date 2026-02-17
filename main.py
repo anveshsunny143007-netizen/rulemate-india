@@ -642,7 +642,7 @@ def category_page(category: str):
         </div>
         """
 
-    title = f"{category.title()} Rules in India"
+    title = category.title()
 
     seo_head = f"""
         <title>{title} | RuleMate India</title>
@@ -669,4 +669,5 @@ def category_page(category: str):
     """
 
     return html.replace("</body>", content + "</body>")
+
 
