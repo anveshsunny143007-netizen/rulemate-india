@@ -596,7 +596,10 @@ def category_page(category: str):
 
     category = category.lower().replace("-", " ")
     # Split category into keywords
-    keywords = category.split()
+    keywords = [
+        w for w in category.split()
+        if w not in ["india", "rules", "rule", "law", "laws"]
+    ]
 
     cursor.execute("SELECT slug, question FROM pages")
     rows = cursor.fetchall()
@@ -621,10 +624,14 @@ def category_page(category: str):
     links_html = ""
 
     for slug, question in matched:
+
+         # remove numbering like "1.", "2)", "3 "
+        clean_q = re.sub(r'^\d+[\.\)\s]+', '', question)
+
         links_html += f"""
         <div class="related-q">
             <a href="/{slug}" style="color:inherit; text-decoration:none;">
-                {question}
+                {clean_q}
             </a>
         </div>
         """
@@ -656,4 +663,5 @@ def category_page(category: str):
     """
 
     return html.replace("</body>", content + "</body>")
+
 
