@@ -154,7 +154,7 @@ def sitemap():
     bad_words = [
         ".env", "debug", "php", "aws", "config",
         "login", "admin", "root", "sql", "backup",
-        "test", "tmp", "cache"
+        "test", "tmp", "cache", "s3cfg"
     ]
 
     urls = ""
@@ -686,6 +686,7 @@ def category_page(category: str):
     """
 
     return html.replace("</body>", content + "</body>")
+
 
 
 
