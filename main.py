@@ -253,6 +253,21 @@ def ask_rule(q: Question):
         }
         
     slug = slugify(q.question)
+    # 🚨 BLOCK NON-LEGAL SINGLE WORD JUNK
+    if len(q.question.split()) < 3:
+        return {
+            "answer": "Please ask a complete question about Indian laws or government rules.",
+            "slug": "",
+            "related": []
+        }
+
+    if len(q.question) < 15:
+        return {
+            "answer": "Please ask a detailed question about Indian laws.",
+            "slug": "",
+            "related": []
+        }
+
     # 🚨 FILTER BAD / JUNK URLS
     bad_words = [
         ".env", "debug", "php", "aws", "config",
@@ -726,6 +741,7 @@ def category_page(category: str):
     """
 
     return html.replace("</body>", content + "</body>")
+
 
 
 
