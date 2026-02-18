@@ -149,6 +149,14 @@ No explanation.
         return "general-laws"
 
     return category
+def clean_question_text(text: str) -> str:
+    # Remove numbering like "1.", "2)", "3 -"
+    text = re.sub(r'^\s*\d+[\.\)\-\s]+', '', text.strip())
+
+    # Remove extra spaces
+    text = re.sub(r'\s+', ' ', text)
+
+    return text.strip()
 
 def slugify(text):
     text = re.sub(r'^[0-9]+[\.\)\s]+', '', text.lower())
@@ -252,7 +260,9 @@ def ask_rule(q: Question):
             "related": []
         }
         
-    slug = slugify(q.question)
+    clean_q = clean_question_text(q.question)
+    slug = slugify(clean_q)
+
     # 🚨 BLOCK NON-LEGAL SINGLE WORD JUNK
     if len(q.question.split()) < 3:
         return {
@@ -316,13 +326,13 @@ def ask_rule(q: Question):
         ][:4]
 
         # Store in DB
-        category = detect_category(q.question)
+        category = detect_category(clean_q)
 
         cursor.execute("""
         INSERT INTO pages (slug, question, answer, related, category)
         VALUES (%s, %s, %s, %s, %s)
         ON CONFLICT (slug) DO NOTHING
-        """, (slug, q.question, answer, json.dumps(related), category))
+        """, (slug, clean_q, answer, json.dumps(related), category))
 
         conn.commit()
 
@@ -741,6 +751,7 @@ def category_page(category: str):
     """
 
     return html.replace("</body>", content + "</body>")
+
 
 
 
