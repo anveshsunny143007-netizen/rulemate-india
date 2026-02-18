@@ -567,8 +567,6 @@ def dynamic_page(slug: str):
 
         category = detect_category(question)
 
-        category = detect_category(question)
-
         cursor.execute("""
             INSERT INTO pages (slug, question, answer, related, category)
            VALUES (%s, %s, %s, %s, %s)
@@ -711,6 +709,7 @@ def category_page(category: str):
     """
 
     return html.replace("</body>", content + "</body>")
+
 
 
 
