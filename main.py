@@ -320,7 +320,7 @@ def ask_rule(q: Question):
         )
 
         related = [
-            r.strip("- ").strip()
+            clean_question_text(r.strip("- ").strip())
             for r in related_response.choices[0].message.content.split("\n")
             if r.strip()
         ][:4]
@@ -582,7 +582,7 @@ def dynamic_page(slug: str):
 
     if not page:
 
-        question = slug.replace("-", " ")
+        question = clean_question_text(slug.replace("-", " "))
 
         response = client.chat.completions.create(
             model="gpt-4o-mini",
@@ -603,13 +603,18 @@ def dynamic_page(slug: str):
             ]
         )
 
-        related_list = [r.strip("- ").strip() for r in rel.choices[0].message.content.split("\n") if r.strip()][:4]
+        related_list = [
+            clean_question_text(r.strip("- ").strip())
+            for r in rel.choices[0].message.content.split("\n")
+            if r.strip()
+        ][:4]
 
         category = detect_category(question)
 
         cursor.execute("""
             INSERT INTO pages (slug, question, answer, related, category)
            VALUES (%s, %s, %s, %s, %s)
+           ON CONFLICT (slug) DO NOTHING
         """, (slug, question, answer, json.dumps(related_list), category))
 
         conn.commit()
@@ -751,6 +756,7 @@ def category_page(category: str):
     """
 
     return html.replace("</body>", content + "</body>")
+
 
 
 
