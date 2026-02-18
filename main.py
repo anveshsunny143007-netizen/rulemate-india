@@ -574,7 +574,7 @@ def dynamic_page(slug: str):
 
         conn.commit()
 
-        page = (question, answer, json.dumps(related_list))
+        page = (question, answer, json.dumps(related_list), category)
 
     question, answer, related_json = page
     
@@ -709,6 +709,7 @@ def category_page(category: str):
     """
 
     return html.replace("</body>", content + "</body>")
+
 
 
 
