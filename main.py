@@ -540,7 +540,12 @@ def dynamic_page(slug: str):
     if len(slug) < 5 or "--" in slug:
         return HTMLResponse(content="Page not found", status_code=404)
 
-    cursor.execute("SELECT question, answer, related FROM pages WHERE slug=%s", (slug,))
+    cursor.execute("""
+    SELECT question, answer, related
+    FROM pages
+    WHERE slug=%s
+    """, (slug,))
+
     page = cursor.fetchone()
 
     if not page:
@@ -577,10 +582,12 @@ def dynamic_page(slug: str):
 
         conn.commit()
 
-        page = (question, answer, json.dumps(related_list), category)
+        page = (question, answer, json.dumps(related_list))
 
-    question, answer, related_json = page
-    
+    question = page[0]
+    answer = page[1]
+    related_json = page[2]
+ 
     # 🔥 REMOVE SERIAL NUMBERS FROM OLD QUESTIONS
     clean_question = re.sub(r'^\d+[\.\)\s]+', '', question)
     related = json.loads(related_json) if related_json else []
@@ -712,6 +719,7 @@ def category_page(category: str):
     """
 
     return html.replace("</body>", content + "</body>")
+
 
 
 
