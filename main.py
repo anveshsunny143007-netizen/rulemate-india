@@ -264,14 +264,14 @@ def ask_rule(q: Question):
     slug = slugify(clean_q)
 
     # 🚨 BLOCK NON-LEGAL SINGLE WORD JUNK
-    if len(q.question.split()) < 3:
+    if len(clean_q.split()) < 3:
         return {
             "answer": "Please ask a complete question about Indian laws or government rules.",
             "slug": "",
             "related": []
         }
 
-    if len(q.question) < 15:
+    if len(clean_q) < 15:
         return {
             "answer": "Please ask a detailed question about Indian laws.",
             "slug": "",
@@ -303,7 +303,7 @@ def ask_rule(q: Question):
             model="gpt-4o-mini",
             messages=[
                 {"role": "system", "content": SYSTEM_PROMPT},
-                {"role": "user", "content": q.question}
+                {"role": "user", "content": clean_q}
             ],
             temperature=0.2
         )
@@ -314,7 +314,7 @@ def ask_rule(q: Question):
             model="gpt-4o-mini",
             messages=[
                 {"role": "system", "content": "Generate EXACTLY 4 short related questions about Indian laws. Return them one per line."},
-                {"role": "user", "content": f"Provide 4 follow-up questions for: {q.question}"}
+                {"role": "user", "content": f"Provide 4 follow-up questions for: {clean_q}"}
             ],
             temperature=0.5
         )
@@ -751,6 +751,7 @@ def category_page(category: str):
     """
 
     return html.replace("</body>", content + "</body>")
+
 
 
 
