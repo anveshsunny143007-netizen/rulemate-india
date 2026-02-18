@@ -74,8 +74,15 @@ def is_legal_question(question: str) -> bool:
         "legal", "rights", "act", "government", "license",
         "permit", "procedure", "certificate", "apply",
         "tax", "gst", "traffic", "driving", "offence",
-        "crime", "arrest", "bail"
+        "crime", "arrest", "bail",
+
+        # 🔥 ADD THESE IMPORTANT WORDS
+        "passport", "aadhaar", "pan", "voter", "ration",
+        "fir", "police", "complaint", "income", "return",
+        "document", "documents", "update", "renewal",
+        "registration", "apply for", "online", "process"
     ]
+
 
     q = question.lower()
 
@@ -719,6 +726,7 @@ def category_page(category: str):
     """
 
     return html.replace("</body>", content + "</body>")
+
 
 
 
