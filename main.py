@@ -528,6 +528,9 @@ def dynamic_page(slug: str):
     ]
 
     slug_lower = slug.lower()
+    # BLOCK FILE REQUESTS
+    if slug_lower.endswith((".ico", ".png", ".jpg", ".jpeg", ".css", ".js", ".json")):
+        return HTMLResponse(content="Page not found", status_code=404)
 
     # Block dangerous patterns
     if any(word in slug_lower for word in bad_words):
@@ -709,6 +712,7 @@ def category_page(category: str):
     """
 
     return html.replace("</body>", content + "</body>")
+
 
 
 
