@@ -151,7 +151,7 @@ No explanation.
     return category
 
 def slugify(text):
-    text = text.lower()
+    text = re.sub(r'^[0-9]+[\.\)\s]+', '', text.lower())
 
     # remove common useless words
     text = re.sub(r'\b(is|are|was|were|do|does|did|can|could|should|would|will|shall)\b', '', text)
@@ -726,6 +726,7 @@ def category_page(category: str):
     """
 
     return html.replace("</body>", content + "</body>")
+
 
 
 
