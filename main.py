@@ -159,7 +159,7 @@ def clean_question_text(text: str) -> str:
     return text.strip()
 
 def slugify(text):
-    text = re.sub(r'^[0-9]+[\.\)\s]+', '', text.lower())
+    text = re.sub(r'^[0-9]+[\.\)\-\s]+', '', text.lower())
 
     # remove common useless words
     text = re.sub(r'\b(is|are|was|were|do|does|did|can|could|should|would|will|shall)\b', '', text)
@@ -261,6 +261,21 @@ def ask_rule(q: Question):
         }
         
     clean_q = clean_question_text(q.question)
+    # 🔥 NEW: Check if same question already exists
+    cursor.execute(
+        "SELECT slug, answer, related FROM pages WHERE question=%s",
+        (clean_q,)
+    )
+    existing = cursor.fetchone()
+
+    if existing:
+        return {
+            "answer": existing[1],
+            "slug": existing[0],
+            "related": json.loads(existing[2]) if existing[2] else []
+        }
+
+    # Only generate slug if not found
     slug = slugify(clean_q)
 
     # 🚨 BLOCK NON-LEGAL SINGLE WORD JUNK
@@ -583,6 +598,8 @@ def dynamic_page(slug: str):
     if not page:
 
         question = clean_question_text(slug.replace("-", " "))
+        if not is_legal_question(question):
+            return HTMLResponse("Page not found", status_code=404)
 
         response = client.chat.completions.create(
             model="gpt-4o-mini",
@@ -756,6 +773,7 @@ def category_page(category: str):
     """
 
     return html.replace("</body>", content + "</body>")
+
 
 
 
