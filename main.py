@@ -167,18 +167,27 @@ def clean_question_text(text: str) -> str:
     return text.strip()
 
 def slugify(text):
+    # remove numbering
     text = re.sub(r'^[0-9]+[\.\)\-\s]+', '', text.lower())
 
-    # remove common useless words
+    # remove useless words
     text = re.sub(r'\b(is|are|was|were|do|does|did|can|could|should|would|will|shall)\b', '', text)
 
     # remove symbols
     text = re.sub(r'[^a-z0-9 ]', '', text)
 
-    # remove extra spaces
+    # clean spaces
     text = re.sub(r'\s+', ' ', text).strip()
 
-    return text.replace(' ', '-')
+    slug = text.replace(' ', '-')
+
+    # ⭐ IMPORTANT — LIMIT SLUG LENGTH
+    MAX_LEN = 80
+    if len(slug) > MAX_LEN:
+        slug = slug[:MAX_LEN]
+        slug = slug.rsplit('-', 1)[0]  # don't cut words
+
+    return slug
 
 @app.get("/sitemap.xml", response_class=Response)
 def sitemap():
@@ -314,11 +323,8 @@ def ask_rule(q: Question):
     ]
 
     if any(word in slug for word in bad_words):
-        return {
-            "answer": "Invalid query.",
-            "slug": "",
-            "related": []
-        }
+        pass
+
     # Check if already exists
     conn, cursor = get_cursor()
     cursor.execute("SELECT answer, related FROM pages WHERE slug=%s", (slug,))
@@ -793,3 +799,4 @@ def category_page(category: str):
     """
 
     return html.replace("</body>", content + "</body>")
+
