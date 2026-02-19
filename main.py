@@ -30,9 +30,17 @@ async def force_domain(request: Request, call_next):
 import psycopg2
 
 DATABASE_URL = os.getenv("DATABASE_URL")
-conn = psycopg2.connect(DATABASE_URL, sslmode="require")
-cursor = conn.cursor()
-    
+
+def get_conn():
+    return psycopg2.connect(DATABASE_URL, sslmode="require")
+
+def get_cursor():
+    conn = get_conn()
+    return conn, conn.cursor()
+
+
+# Create table safely
+conn, cursor = get_cursor()
 cursor.execute("""
 CREATE TABLE IF NOT EXISTS pages (
     slug TEXT PRIMARY KEY,
@@ -42,8 +50,8 @@ CREATE TABLE IF NOT EXISTS pages (
     category TEXT
 )
 """)
-
 conn.commit()
+conn.close()
 
 SYSTEM_PROMPT = """
 You are an Indian Government Rules Assistant.
@@ -174,17 +182,21 @@ def slugify(text):
 
 @app.get("/sitemap.xml", response_class=Response)
 def sitemap():
+    conn, cursor = get_cursor()
     cursor.execute("SELECT slug FROM pages")
     rows = cursor.fetchall()
+    conn.close()
     
     # 🔥 GET ALL CATEGORIES
+    conn, cursor = get_cursor()
     cursor.execute("""
         SELECT DISTINCT category
         FROM pages
         WHERE category IS NOT NULL
     """)
     categories = cursor.fetchall()
-
+    conn.close()
+    
     base = "https://rulemate.in"
 
     # 🚨 Block dangerous patterns
@@ -262,12 +274,14 @@ def ask_rule(q: Question):
         
     clean_q = clean_question_text(q.question)
     # 🔥 NEW: Check if same question already exists
+    conn, cursor = get_cursor()
     cursor.execute(
         "SELECT slug, answer, related FROM pages WHERE question=%s",
         (clean_q,)
     )
     existing = cursor.fetchone()
-
+    conn.close()
+    
     if existing:
         return {
             "answer": existing[1],
@@ -306,9 +320,11 @@ def ask_rule(q: Question):
             "related": []
         }
     # Check if already exists
+    conn, cursor = get_cursor()
     cursor.execute("SELECT answer, related FROM pages WHERE slug=%s", (slug,))
     existing = cursor.fetchone()
-
+    conn.close()
+    
     if existing:
         answer = existing[0]
         related = json.loads(existing[1]) if existing[1] else []
@@ -342,7 +358,7 @@ def ask_rule(q: Question):
 
         # Store in DB
         category = detect_category(clean_q)
-
+        conn, cursor = get_cursor()
         cursor.execute("""
         INSERT INTO pages (slug, question, answer, related, category)
         VALUES (%s, %s, %s, %s, %s)
@@ -350,7 +366,8 @@ def ask_rule(q: Question):
         """, (slug, clean_q, answer, json.dumps(related), category))
 
         conn.commit()
-
+        conn.close()
+        
     return {
         "answer": answer,
         "slug": slug,
@@ -586,7 +603,7 @@ def dynamic_page(slug: str):
     # Block weird slugs
     if len(slug) < 5 or "--" in slug:
         return HTMLResponse(content="Page not found", status_code=404)
-
+    conn, cursor = get_cursor()
     cursor.execute("""
     SELECT question, answer, related
     FROM pages
@@ -594,7 +611,8 @@ def dynamic_page(slug: str):
     """, (slug,))
 
     page = cursor.fetchone()
-
+    conn.close()
+    
     if not page:
 
         question = clean_question_text(slug.replace("-", " "))
@@ -627,7 +645,7 @@ def dynamic_page(slug: str):
         ][:4]
 
         category = detect_category(question)
-
+        conn, cursor = get_cursor()
         cursor.execute("""
             INSERT INTO pages (slug, question, answer, related, category)
            VALUES (%s, %s, %s, %s, %s)
@@ -635,7 +653,8 @@ def dynamic_page(slug: str):
         """, (slug, question, answer, json.dumps(related_list), category))
 
         conn.commit()
-
+        conn.close()
+        
         page = (question, answer, json.dumps(related_list))
 
     question = page[0]
@@ -725,7 +744,7 @@ def dynamic_page(slug: str):
 
 @app.get("/category/{category}", response_class=HTMLResponse)
 def category_page(category: str):
-
+    conn, cursor = get_cursor()
     cursor.execute("""
         SELECT slug, question FROM pages
         WHERE category=%s
@@ -733,7 +752,8 @@ def category_page(category: str):
     """, (category,))
 
     rows = cursor.fetchall()
-
+    conn.close()
+    
     if not rows:
         return HTMLResponse("<h2>No content found for this category yet.</h2>")
 
@@ -773,21 +793,3 @@ def category_page(category: str):
     """
 
     return html.replace("</body>", content + "</body>")
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
