@@ -157,6 +157,7 @@ No explanation.
         return "general-laws"
 
     return category
+
 def clean_question_text(text: str) -> str:
     # Remove numbering like "1.", "2)", "3 -"
     text = re.sub(r'^\s*\d+[\.\)\-\s]+', '', text.strip())
@@ -482,12 +483,26 @@ def home():
         }
         
         .related-title { margin-top: 25px; font-weight: 700; color: #6352c7; font-size: 0.9rem; }
+        
+        /* UPDATED: More visible and pop up effect */
         .related-q { 
-            display: block; background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255,255,255,0.05);
-            padding: 12px 15px; border-radius: 10px; margin-top: 10px;
-            cursor: pointer; font-size: 0.85rem; transition: 0.2s; color: rgba(255,255,255,0.7);
+            display: block; 
+            background: rgba(255, 255, 255, 0.08); /* Brighter base */
+            border: 1px solid rgba(255,255,255,0.15); /* Stronger border */
+            padding: 15px 20px; 
+            border-radius: 10px; margin-top: 12px;
+            cursor: pointer; font-size: 0.9rem; 
+            transition: all 0.25s ease; /* Smoother transition */
+            color: rgba(255,255,255,0.9); /* Brighter text */
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2); /* Base shadow */
         }
-        .related-q:hover { background: rgba(255, 255, 255, 0.06); color: white; }
+        .related-q:hover { 
+            background: rgba(255, 255, 255, 0.15); /* Brighter on hover */
+            color: white; 
+            border-color: rgba(255,255,255,0.3); /* Pop the border */
+            transform: translateY(-2px); /* Pop up effect */
+            box-shadow: 0 6px 12px rgba(0,0,0,0.4); /* Stronger shadow on hover */
+        }
 
         .check-tag {
             display: inline-flex; margin-top: 25px; padding: 8px 18px;
@@ -683,17 +698,12 @@ def dynamic_page(slug: str):
     clean_question = re.sub(r'^\d+[\.\)\s]+', '', question)
     related = json.loads(related_json) if related_json else []
     
-    # Generate related HTML using your SAME styling
+    # Generate related HTML using your SAME styling (Flattened string to prevent pre-wrap issues)
     related_html = ""
     for q in related:
         clean_q = q.replace('"', '').replace("'", "")
-        related_html += f"""
-            <div class="related-q">
-                <a href="/{slugify(clean_q)}" style="color:inherit; text-decoration:none;">
-                    {clean_q}
-                </a>
-            </div>
-        """
+        related_html += f'<div class="related-q"><a href="/{slugify(clean_q)}" style="color:inherit; text-decoration:none; display:block;">{clean_q}</a></div>'
+
     # Extract SHORT ANSWER for meta description
     meta_summary = answer
 
@@ -780,13 +790,8 @@ def category_page(category: str):
     for slug, question in rows:
         clean_q = re.sub(r'^\d+[\.\)\s]+', '', question)
 
-        links_html += f"""
-        <div class="related-q">
-            <a href="/{slug}" style="color:inherit; text-decoration:none;">
-                {clean_q}
-            </a>
-        </div>
-        """
+        # Flattened string to prevent pre-wrap issues
+        links_html += f'<div class="related-q"><a href="/{slug}" style="color:inherit; text-decoration:none; display:block;">{clean_q}</a></div>'
 
     title = category.replace("-", " ").title()
 
@@ -811,6 +816,3 @@ def category_page(category: str):
     """
 
     return html.replace("</body>", content + "</body>")
-
-
-
