@@ -598,6 +598,12 @@ def dynamic_page(slug: str):
     ]
 
     slug_lower = slug.lower()
+    # 🔥 AUTO REDIRECT OLD NUMBERED SLUGS
+    clean_slug = slugify(slug.replace("-", " "))
+
+    if clean_slug != slug_lower:
+        return RedirectResponse(url=f"/{clean_slug}", status_code=301)
+
     # BLOCK FILE REQUESTS
     if slug_lower.endswith((".ico", ".png", ".jpg", ".jpeg", ".css", ".js", ".json")):
         return HTMLResponse(content="Page not found", status_code=404)
@@ -799,4 +805,5 @@ def category_page(category: str):
     """
 
     return html.replace("</body>", content + "</body>")
+
 
