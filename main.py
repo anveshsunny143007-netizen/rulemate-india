@@ -180,6 +180,7 @@ def slugify(text):
     text = re.sub(r'\s+', ' ', text).strip()
 
     slug = text.replace(' ', '-')
+    slug = slug.strip("-")
 
     # ⭐ IMPORTANT — LIMIT SLUG LENGTH
     MAX_LEN = 80
@@ -323,7 +324,11 @@ def ask_rule(q: Question):
     ]
 
     if any(word in slug for word in bad_words):
-        pass
+        return {
+            "answer": "Invalid query.",
+            "slug": "",
+            "related": []
+        }
 
     # Check if already exists
     conn, cursor = get_cursor()
@@ -601,7 +606,8 @@ def dynamic_page(slug: str):
     # 🔥 AUTO REDIRECT OLD NUMBERED SLUGS
     clean_slug = slugify(slug.replace("-", " "))
 
-    if clean_slug != slug_lower:
+    # redirect only if slug starts with number OR exceeds length
+    if slug != clean_slug and len(clean_slug) > 0:
         return RedirectResponse(url=f"/{clean_slug}", status_code=301)
 
     # BLOCK FILE REQUESTS
@@ -805,5 +811,6 @@ def category_page(category: str):
     """
 
     return html.replace("</body>", content + "</body>")
+
 
 
