@@ -647,48 +647,7 @@ def dynamic_page(slug: str):
     conn.close()
     
     if not page:
-
-        question = clean_question_text(slug.replace("-", " "))
-        if not is_legal_question(question):
-            return HTMLResponse("Page not found", status_code=404)
-
-        response = client.chat.completions.create(
-            model="gpt-4o-mini",
-            messages=[
-                {"role": "system", "content": SYSTEM_PROMPT},
-                {"role": "user", "content": question}
-            ],
-            temperature=0.2
-        )
-
-        answer = response.choices[0].message.content
-
-        rel = client.chat.completions.create(
-            model="gpt-4o-mini",
-            messages=[
-                {"role": "system", "content": "Generate 4 related questions about Indian laws."},
-                {"role": "user", "content": question}
-            ]
-        )
-
-        related_list = [
-            clean_question_text(r.strip("- ").strip())
-            for r in rel.choices[0].message.content.split("\n")
-            if r.strip()
-        ][:4]
-
-        category = detect_category(question)
-        conn, cursor = get_cursor()
-        cursor.execute("""
-            INSERT INTO pages (slug, question, answer, related, category)
-           VALUES (%s, %s, %s, %s, %s)
-           ON CONFLICT (slug) DO NOTHING
-        """, (slug, question, answer, json.dumps(related_list), category))
-
-        conn.commit()
-        conn.close()
-        
-        page = (question, answer, json.dumps(related_list))
+        return HTMLResponse("Page not found", status_code=404)
 
     question = page[0]
     answer = page[1]
@@ -816,3 +775,4 @@ def category_page(category: str):
     """
 
     return html.replace("</body>", content + "</body>")
+
