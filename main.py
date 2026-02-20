@@ -392,11 +392,13 @@ def ask_rule(q: Question):
             temperature=0.5
         )
 
-        related = [
-            clean_question_text(r.strip("- ").strip())
-            for r in related_response.choices[0].message.content.split("\n")
-            if r.strip()
-        ][:4]
+        related = []
+        for r in related_response.choices[0].message.content.split("\n"):
+            r = clean_question_text(r.strip("- ").strip())
+            if r and not is_ai_fragment(r):
+                related.append(r)
+
+        related = related[:4]
 
         # Store in DB
         category = detect_category(clean_q)
@@ -805,6 +807,7 @@ def category_page(category: str):
     """
 
     return html.replace("</body>", content + "</body>")
+
 
 
 
