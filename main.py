@@ -272,6 +272,27 @@ Sitemap: https://rulemate.in/sitemap.xml
 """
     return Response(content=content.strip(), media_type="text/plain")
 
+def is_ai_fragment(text: str) -> bool:
+    text = text.lower().strip()
+
+    junk_patterns = [
+        "certainly",
+        "here are",
+        "related questions",
+        "sure here",
+        "provide 4",
+    ]
+
+    # starts with junk phrase
+    if any(text.startswith(j) for j in junk_patterns):
+        return True
+
+    # incomplete fragment starts
+    if text.startswith(("and ", "or ", "about ")):
+        return True
+
+    return False
+
 @app.post("/ask")
 def ask_rule(q: Question):
 
@@ -284,6 +305,12 @@ def ask_rule(q: Question):
         }
         
     clean_q = clean_question_text(q.question)
+    if is_ai_fragment(clean_q):
+        return {
+            "answer": "Please ask a complete question about Indian laws.",
+            "slug": "",
+            "related": []
+        }
     # 🔥 NEW: Check if same question already exists
     conn, cursor = get_cursor()
     cursor.execute(
@@ -321,7 +348,7 @@ def ask_rule(q: Question):
     # 🚨 FILTER BAD / JUNK URLS
     bad_words = [
         ".env", "debug", "php", "aws", "config",
-        "here", "related", "four", "certainly", "sure"
+        "here", "related", "certainly", "sure"
     ]
 
     if any(word in slug for word in bad_words):
@@ -775,4 +802,5 @@ def category_page(category: str):
     """
 
     return html.replace("</body>", content + "</body>")
+
 
