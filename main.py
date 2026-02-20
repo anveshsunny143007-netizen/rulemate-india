@@ -99,6 +99,9 @@ def is_legal_question(question: str) -> bool:
         if word in q:
             return True
 
+    # Step 2: fallback only if meaningful length
+    if len(q) < 20:
+        return False
     # Step 2: fallback to AI check
     check = client.chat.completions.create(
         model="gpt-4o-mini",
@@ -348,7 +351,7 @@ def ask_rule(q: Question):
     # 🚨 FILTER BAD / JUNK URLS
     bad_words = [
         ".env", "debug", "php", "aws", "config",
-        "here", "related", "certainly", "sure"
+        "login", "admin", "root", "sql", "backup", "certainly", "sure"
     ]
 
     if any(word in slug for word in bad_words):
@@ -802,5 +805,6 @@ def category_page(category: str):
     """
 
     return html.replace("</body>", content + "</body>")
+
 
 
