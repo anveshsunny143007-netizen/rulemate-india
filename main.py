@@ -8,14 +8,11 @@ from openai import OpenAI
 import json
 from fastapi import Request
 from fastapi.responses import RedirectResponse
-from fastapi.staticfiles import StaticFiles
 
 # 1. Configuration & Setup
 load_dotenv()
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 app = FastAPI()
-
-app.mount("/static", StaticFiles(directory="static"), name="static")
 
 @app.middleware("http")
 async def force_domain(request: Request, call_next):
@@ -357,7 +354,7 @@ def ask_rule(q: Question):
         "login", "admin", "root", "sql", "backup", "certainly", "sure"
     ]
 
-    if any(word in slug for word in bad_words):
+    if any(word in slug.split("-") for word in bad_words):
         return {
             "answer": "Invalid query.",
             "slug": "",
@@ -427,370 +424,218 @@ def home():
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>RuleMate India</title>
-
-<style>
-    body {
-    margin: 0;
-    font-family: 'Inter', sans-serif;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    /* Ensure the background covers perfectly and stays fixed */
-    background: url('/static/bg.jpg') no-repeat center center fixed;
-    background-color: #f0f4f8; 
-    background-size: cover;
-    padding: 40px 20px;
-    box-sizing: border-box;
-}
-
-/* REMOVED the heavy body::before overlay. 
-   Instead, we just add a very subtle white radial glow behind the center 
-   so the text is readable, but the edges stay vibrant! */
-body::before {
-    content: "";
-    position: fixed;
-    inset: 0;
-    background: radial-gradient(circle at center, rgba(255,255,255,0.7) 0%, rgba(255,255,255,0) 60%);
-    z-index: -1;
-    pointer-events: none;
-}
-
-/* Header Styling */
-.header-container {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-bottom: 5px;
-}
-
-.in-badge {
-    font-weight: 800;
-    font-size: 1.4rem;
-    color: #1c2d5a; /* Matched to dark blue */
-}
-
-h1 {
-    font-size: 3rem;
-    font-weight: 800;
-    color: #1c2d5a;
-    margin: 0;
-    letter-spacing: -0.04em;
-}
-
-.text-blue { color: #2b57e2; }
-
-.subtitle {
-    color: #3b4b6b;
-    font-size: 1.1rem;
-    margin-bottom: 35px;
-    text-align: center;
-}
-
-/* 3D NEUMORPHIC GLASS CARD */
-.glass-card {
-    background: rgba(255, 255, 255, 0.55); /* More transparent */
-    border-radius: 28px;
-    padding: 40px;
-    width: 100%;
-    max-width: 680px;
-    backdrop-filter: blur(15px);
-    -webkit-backdrop-filter: blur(15px);
-    /* Thick white border for the glossy edge */
-    border: 2px solid rgba(255, 255, 255, 1); 
-    /* Soft, wide shadow to make it float */
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.08); 
-    text-align: center;
-    margin-bottom: 40px;
-}
-
-/* SUNKEN INPUT (Neumorphism) */
-#userInput {
-    width: 100%;
-    padding: 22px;
-    border-radius: 16px;
-    border: 1px solid rgba(255, 255, 255, 0.6);
-    font-size: 1.05rem;
-    background: #eef2f9; /* Slight grayish-blue to contrast with the white card */
-    /* Deep 3D inset shadow */
-    box-shadow: inset 4px 4px 10px rgba(0, 0, 0, 0.06), inset -4px -4px 10px rgba(255, 255, 255, 1);
-    outline: none;
-    box-sizing: border-box;
-    color: #333;
-}
-
-#userInput::placeholder { color: #8a98b5; }
-
-/* 3D RAISED BUTTON */
-.btn-ask {
-    width: 100%;
-    margin-top: 20px;
-    padding: 20px;
-    border-radius: 16px;
-    font-size: 1.25rem;
-    font-weight: 700;
-    border: none;
-    cursor: pointer;
-    color: white;
-    /* Bright blue gradient */
-    background: linear-gradient(180deg, #4f7cf6 0%, #2953da 100%);
-    /* Top white highlight and strong bottom shadow */
-    box-shadow: inset 0 2px 2px rgba(255, 255, 255, 0.4), 0 8px 20px rgba(41, 83, 218, 0.3);
-    transition: all 0.2s ease;
-}
-
-.btn-ask:hover {
-    transform: translateY(-2px);
-    box-shadow: inset 0 2px 2px rgba(255, 255, 255, 0.5), 0 12px 25px rgba(41, 83, 218, 0.4);
-}
-
-.btn-ask:active {
-    transform: translateY(2px);
-    box-shadow: inset 0 2px 2px rgba(255, 255, 255, 0.2), 0 4px 10px rgba(41, 83, 218, 0.3);
-}
-
-/* RESULT AREA & ANIMATION */
-@keyframes pulse-fade {
-    0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; }
-}
-.loading-pulse {
-    animation: pulse-fade 1.5s infinite ease-in-out;
-    color: #2b57e2;
-    font-style: italic;
-    text-align: center;
-    padding: 20px;
-}
-
-#resultArea { margin-top: 30px; display: none; text-align: left; }
-
-.answer-box {
-    background: rgba(255, 255, 255, 0.85);
-    padding: 25px;
-    border-radius: 20px;
-    white-space: pre-wrap;
-    border: 1px solid white;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.03);
-    color: #333;
-    line-height: 1.6;
-    transition: opacity 0.4s ease-in-out;
-}
-
-.related-title { margin-top: 25px; font-weight: 700; color: #2b57e2; font-size: 0.95rem; }
-
-/* RELATED QUESTIONS */
-.related-q {
-    background: rgba(255, 255, 255, 0.7);
-    border: 1px solid rgba(255, 255, 255, 1);
-    padding: 14px 20px;
-    border-radius: 12px;
-    margin-top: 10px;
-    cursor: pointer;
-    transition: all 0.2s;
-    font-size: 0.95rem;
-    color: #3b4b6b;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02);
-}
-
-.related-q:hover {
-    background: white;
-    transform: translateY(-2px);
-    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.08);
-    color: #1c2d5a;
-}
-
-/* CHIP (Under the button) */
-.check-tag {
-    margin-top: 25px;
-    padding: 10px 24px;
-    border-radius: 40px;
-    background: #f4f7ff; /* Solid light blue background */
-    display: inline-block;
-    font-size: 0.85rem;
-    color: #2b57e2;
-    border: 1px solid #d6e2ff;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.02);
-}
-
-/* FOOTER */
-.footer-section { 
-    text-align: center; 
-    max-width: 650px; 
-    margin-top: auto; 
-    color: #1c2d5a; 
-    position: relative;
-    z-index: 10;
-}
-.about-title { font-weight: 800; margin-bottom: 8px; font-size: 1.1rem; }
-.about-text { font-size: 0.95rem; margin-bottom: 20px; line-height: 1.5; color: #3b4b6b;}
-.disclaimer-container {
-    border-top: 1px solid rgba(0, 0, 0, 0.1); 
-    padding-top: 20px;
-    font-size: 0.75rem; 
-    color: #666;
-}
-/* MOBILE RESPONSIVENESS */
-@media (max-width: 600px) {
-    body {
-        margin: 0;
-        /* Updated font stack for better compatibility */
-        font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-        min-height: 100vh;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        /* Mobile-friendly background settings */
-        background: url('/static/bg.jpg') no-repeat center center;
-        background-color: #f0f4f8; 
-        background-size: cover;
-        background-attachment: scroll; /* Changed from fixed for mobile stability */
-        padding: 40px 20px;
-        box-sizing: border-box;
-    }
-
-    /* Keep your existing desktop styles... */
-
-    /* IMPROVED MOBILE RESPONSIVENESS */
-    @media (max-width: 600px) {
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RuleMate India</title>
+    <style>
         body {
-            padding: 20px 15px;
-            /* Ensure background covers the whole screen on mobile */
-            background-attachment: scroll; 
+            margin: 0; padding: 0; min-height: 100vh;
+            display: flex; flex-direction: column; align-items: center;
+            background: radial-gradient(circle at 50% -10%, #1a1b3a 0%, #030414 70%);
+            background-color: #030414; color: #ffffff;
+            font-family: 'Inter', -apple-system, sans-serif;
+            padding: 40px 20px;
         }
+        .logo-container { display: flex; align-items: center; gap: 10px; margin-bottom: 5px; }
+        .flag-emoji { font-size: 2rem; }
+        h1 { font-size: 2.8rem; font-weight: 800; margin: 0; letter-spacing: -0.04em; }
+        .hero-subtitle { color: rgba(255, 255, 255, 0.5); font-size: 1.1rem; margin-bottom: 35px; text-align: center; }
         
-        h1 {
-            font-size: 2rem;
-            margin-top: 10px;
-        }
-        
-        .subtitle {
-            font-size: 0.9rem;
-            margin-bottom: 20px;
-        }
-        
+        /* 3D METALLIC GLASS CARD */
         .glass-card {
-            padding: 20px;
-            border-radius: 20px;
-            margin-bottom: 20px; /* Reduced margin to pull footer up */
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%);
+            background-image: radial-gradient(at 0% 0%, rgba(255,255,255,0.1) 0%, transparent 50%);
+            backdrop-filter: blur(25px);
+            border-top: 1px solid rgba(255, 255, 255, 0.3);
+            border-left: 1px solid rgba(255, 255, 255, 0.1);
+            border-bottom: 2px solid rgba(0, 0, 0, 0.6);
+            border-right: 2px solid rgba(0, 0, 0, 0.4);
+            border-radius: 24px;
+            padding: 40px; width: 100%; max-width: 720px;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255,255,255,0.05);
+            margin-bottom: 50px; box-sizing: border-box;
         }
-        
+
+        /* SUNKEN INPUT */
         #userInput {
-            padding: 14px;
-            font-size: 0.95rem;
+            width: 100%; background: rgba(0, 0, 0, 0.5); border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 12px; padding: 20px; color: white; font-size: 1rem;
+            margin-bottom: 20px; box-sizing: border-box; outline: none;
+            box-shadow: inset 0 4px 12px rgba(0,0,0,0.9);
         }
-        
+
+        /* FADED METALLIC BUTTON (Lowered Brightness) */
         .btn-ask {
-            padding: 15px;
-            font-size: 1.1rem;
-        }
-
-        .footer-section {
-            margin-top: 20px; /* Prevents the massive white gap */
-            padding-bottom: 20px;
-        }
-
-        .about-text, .disclaimer-container {
-            font-size: 0.8rem;
-            line-height: 1.4;
-        }
-    }
-}
-</style>
-</head>
-
-<body>
-
-<div class="header-container">
-    <span class="in-badge">IN</span>
-    <h1>RuleMate <span class="text-blue">India</span></h1>
-</div>
-<div class="subtitle">Government rules made easy. Just ask.</div>
-
-<div class="glass-card">
-    <input type="text" id="userInput" placeholder="Example: What are the latest traffic rules in India?">
-    <button class="btn-ask" id="askBtn" onclick="handleAsk()">Ask</button>
-
-    <div id="resultArea">
-        <div class="answer-box" id="aiAnswer"></div>
-        <div class="related-title">Related Questions:</div>
-        <div id="relatedQuestions"></div>
-    </div>
-
-    <div class="check-tag">✓ Clarifying Indian regulations through an educational lens.</div>
-</div>
-
-<div class="footer-section">
-    <div class="about-title">About RuleMate India</div>
-    <p class="about-text">RuleMate India helps people understand Indian government rules, laws, fines and procedures in simple language.</p>
-    <div class="disclaimer-container">
-        <strong>Disclaimer:</strong> This website provides general information on Indian government rules and laws for educational purposes only. It is not legal advice. Laws and rules may change. Always verify with official government notifications or consult a qualified professional. 
-    </div>
-</div>
-
-<script>
-    async function handleAsk() {
-        const queryInput = document.getElementById('userInput');
-        const btn = document.getElementById('askBtn');
-        const resultArea = document.getElementById('resultArea');
-        const aiAnswer = document.getElementById('aiAnswer');
-        const relatedBox = document.getElementById('relatedQuestions');
-
-        if (queryInput.value.trim() === "") return;
-
-        btn.disabled = true;
-        btn.innerText = "Processing...";
-        aiAnswer.style.opacity = "0";
-        
-        // Restored loading animation
-        setTimeout(() => {
-            aiAnswer.innerHTML = '<div class="loading-pulse">Searching official codes...</div>';
-            aiAnswer.style.opacity = "1";
-            resultArea.style.display = "block";
-        }, 400);
-        
-        try {
-            const response = await fetch('/ask', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ question: queryInput.value })
-            });
-            const data = await response.json();
-            window.history.pushState({}, "", "/" + data.slug);
+            width: 100%; 
+            /* Desaturated "Deep Purple Steel" Gradient */
+            background: linear-gradient(to bottom, 
+                #6352c7 0%, 
+                #4e3eb3 45%, 
+                #44369e 50%, 
+                #372b85 100%);
+            color: rgba(255, 255, 255, 0.9); border: none;
+            padding: 18px; border-radius: 12px; font-size: 1.1rem; font-weight: 700;
+            cursor: pointer; position: relative;
             
+            border-top: 1px solid rgba(255,255,255,0.2);
+            border-bottom: 5px solid #1f1752;
+            
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5);
+            transition: all 0.1s;
+        }
+
+        .btn-ask:hover { 
+            filter: brightness(1.15); 
+            background: linear-gradient(to bottom, #6d5dd1 0%, #44369e 100%);
+        }
+
+        .btn-ask:active {
+            transform: translateY(3px);
+            border-bottom: 2px solid #1f1752;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+        }
+        
+        /* PULSE ANIMATION */
+        @keyframes pulse-fade {
+            0% { opacity: 0.3; } 50% { opacity: 0.6; } 100% { opacity: 0.3; }
+        }
+        .loading-pulse {
+            animation: pulse-fade 1.5s infinite ease-in-out;
+            color: rgba(255, 255, 255, 0.4);
+            font-style: italic; text-align: center; padding: 20px;
+        }
+
+        #resultArea { margin-top: 30px; display: none; text-align: left; }
+        .answer-box { 
+            background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255,255,255,0.05); 
+            border-radius: 15px; padding: 25px; white-space: pre-wrap; line-height: 1.6;
+            box-shadow: inset 0 2px 10px rgba(0,0,0,0.6);
+            transition: opacity 0.4s ease-in-out;
+        }
+        
+        .related-title { margin-top: 25px; font-weight: 700; color: #6352c7; font-size: 0.9rem; }
+        
+        /* UPDATED: More visible and pop up effect */
+        .related-q { 
+            display: block; 
+            background: rgba(255, 255, 255, 0.08); /* Brighter base */
+            border: 1px solid rgba(255,255,255,0.15); /* Stronger border */
+            padding: 15px 20px; 
+            border-radius: 10px; margin-top: 12px;
+            cursor: pointer; font-size: 0.9rem; 
+            transition: all 0.25s ease; /* Smoother transition */
+            color: rgba(255,255,255,0.9); /* Brighter text */
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2); /* Base shadow */
+        }
+        .related-q:hover { 
+            background: rgba(255, 255, 255, 0.15); /* Brighter on hover */
+            color: white; 
+            border-color: rgba(255,255,255,0.3); /* Pop the border */
+            transform: translateY(-2px); /* Pop up effect */
+            box-shadow: 0 6px 12px rgba(0,0,0,0.4); /* Stronger shadow on hover */
+        }
+
+        .check-tag {
+            display: inline-flex; margin-top: 25px; padding: 8px 18px;
+            border-radius: 100px; background: rgba(99, 82, 199, 0.08);
+            border: 1px solid rgba(99, 82, 199, 0.15); color: #7a68e8; font-size: 0.8rem;
+        }
+
+        .footer-section { text-align: center; max-width: 650px; margin-top: auto; }
+        .disclaimer-container {
+            border-top: 1px solid rgba(255, 255, 255, 0.08); padding-top: 25px;
+            font-size: 0.75rem; color: rgba(255, 255, 255, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="logo-container">
+        <span class="flag-emoji">🇮🇳</span>
+        <h1>RuleMate India</h1>
+    </div>
+    <p class="hero-subtitle">Government rules made easy. Just ask.</p>
+
+    <div class="glass-card">
+        <input type="text" id="userInput" placeholder="Example: What are the latest traffic rules in India?">
+        <button id="askBtn" class="btn-ask" onclick="handleAsk()">Ask</button>
+
+        <div id="resultArea">
+            <div class="answer-box" id="aiAnswer"></div>
+            <div class="related-title">Related Questions:</div>
+            <div id="relatedQuestions"></div>
+        </div>
+
+        <div style="text-align: center;">
+            <div class="check-tag">✓ Clarifying Indian regulations through an educational lens.</div>
+        </div>
+    </div>
+
+     <div class="footer-section">
+        <div class="about-title">About RuleMate India</div>
+        <p class="about-text">RuleMate India helps people understand Indian government rules, laws, fines and procedures in simple language.</p>
+        <div class="disclaimer-container">
+            <strong>Disclaimer:</strong> This website provides general information on Indian government rules and laws for educational purposes only. It is not legal advice. Laws and rules may change. Always verify with official government notifications or consult a qualified professional. 
+        </div>
+    </div>
+
+    <script>
+        async function handleAsk() {
+            const queryInput = document.getElementById('userInput');
+            const btn = document.getElementById('askBtn');
+            const resultArea = document.getElementById('resultArea');
+            const aiAnswer = document.getElementById('aiAnswer');
+            const relatedBox = document.getElementById('relatedQuestions');
+
+            if (queryInput.value.trim() === "") return;
+
+            btn.disabled = true;
+            btn.innerText = "Processing...";
             aiAnswer.style.opacity = "0";
             
             setTimeout(() => {
-                aiAnswer.innerText = data.answer;
+                aiAnswer.innerHTML = '<div class="loading-pulse">Searching official codes...</div>';
                 aiAnswer.style.opacity = "1";
-                relatedBox.innerHTML = "";
-                
-                // Restored clean regex
-                data.related.forEach(q => {
-                    const div = document.createElement('div');
-                    div.className = 'related-q';
-                    let cleanQ = q.replace(/^\\d+[\\.\\)\\s]+/, '');
-                    div.innerText = cleanQ;
-                    div.onclick = () => { 
-                        queryInput.value = cleanQ; 
-                        handleAsk(); 
-                        window.scrollTo({ top: 0, behavior: 'smooth' }); 
-                    };
-                    relatedBox.appendChild(div);
-                });
+                resultArea.style.display = "block";
             }, 400);
-        } catch (err) {
-            // Restored error handling
-            aiAnswer.innerText = "Error fetching answer. Please try again.";
-            aiAnswer.style.opacity = "1";
-        } finally {
-            btn.disabled = false;
-            btn.innerText = "Ask";
+            
+            try {
+                const response = await fetch('/ask', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ question: queryInput.value })
+                });
+                const data = await response.json();
+                window.history.pushState({}, "", "/" + data.slug);
+                
+                aiAnswer.style.opacity = "0";
+                
+                setTimeout(() => {
+                    aiAnswer.innerText = data.answer;
+                    aiAnswer.style.opacity = "1";
+                    relatedBox.innerHTML = "";
+                    data.related.forEach(q => {
+                        const div = document.createElement('div');
+                        div.className = 'related-q';
+                        let cleanQ = q.replace(/^\\d+[\\.\\)\\s]+/, '');
+                        div.innerText = cleanQ;
+                        div.onclick = () => { 
+                            queryInput.value = cleanQ; 
+                            handleAsk(); 
+                            window.scrollTo({ top: 0, behavior: 'smooth' }); 
+                        };
+                        relatedBox.appendChild(div);
+                    });
+                }, 400);
+            } catch (err) {
+                aiAnswer.innerText = "Error fetching answer.";
+                aiAnswer.style.opacity = "1";
+            } finally {
+                btn.disabled = false;
+                btn.innerText = "Ask";
+            }
         }
-    }
-</script>
-
+    </script>
 </body>
 </html>
 """
@@ -962,7 +807,3 @@ def category_page(category: str):
     """
 
     return html.replace("</body>", content + "</body>")
-
-
-
-
