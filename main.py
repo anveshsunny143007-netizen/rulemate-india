@@ -8,12 +8,13 @@ from openai import OpenAI
 import json
 from fastapi import Request
 from fastapi.responses import RedirectResponse
+from fastapi.staticfiles import StaticFiles
 
 # 1. Configuration & Setup
 load_dotenv()
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 app = FastAPI()
-from fastapi.staticfiles import StaticFiles
+
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 @app.middleware("http")
@@ -877,4 +878,5 @@ def category_page(category: str):
     """
 
     return html.replace("</body>", content + "</body>")
+
 
