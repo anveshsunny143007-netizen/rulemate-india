@@ -438,7 +438,7 @@ def home():
         display: flex;
         flex-direction: column;
         align-items: center;
-        background: url('/static/bg.png') no-repeat center center fixed;
+        background: url('/static/bg.jpg') no-repeat center center fixed;
         background-color: #f0f4f8; /* Fallback color */
         background-size: cover;
         padding: 40px 20px;
@@ -877,3 +877,4 @@ def category_page(category: str):
     """
 
     return html.replace("</body>", content + "</body>")
+
