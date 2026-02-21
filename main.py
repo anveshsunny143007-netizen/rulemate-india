@@ -634,40 +634,67 @@ h1 {
 /* MOBILE RESPONSIVENESS */
 @media (max-width: 600px) {
     body {
-        padding: 20px 15px; /* Less empty space on the edges */
+        margin: 0;
+        /* Updated font stack for better compatibility */
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        /* Mobile-friendly background settings */
+        background: url('/static/bg.jpg') no-repeat center center;
+        background-color: #f0f4f8; 
+        background-size: cover;
+        background-attachment: scroll; /* Changed from fixed for mobile stability */
+        padding: 40px 20px;
+        box-sizing: border-box;
     }
-    
-    h1 {
-        font-size: 2.2rem; /* Shrink title for phone screens */
-    }
-    
-    .in-badge {
-        font-size: 1.1rem;
-    }
-    
-    .subtitle {
-        font-size: 1rem;
-        margin-bottom: 25px;
-    }
-    
-    .glass-card {
-        padding: 25px; /* Give the input box more room to breathe */
-        border-radius: 20px;
-    }
-    
-    #userInput {
-        padding: 16px;
-        font-size: 1rem;
-    }
-    
-    .btn-ask {
-        padding: 16px;
-        font-size: 1.1rem;
-    }
-    
-    .check-tag {
-        padding: 8px 16px;
-        font-size: 0.75rem;
+
+    /* Keep your existing desktop styles... */
+
+    /* IMPROVED MOBILE RESPONSIVENESS */
+    @media (max-width: 600px) {
+        body {
+            padding: 20px 15px;
+            /* Ensure background covers the whole screen on mobile */
+            background-attachment: scroll; 
+        }
+        
+        h1 {
+            font-size: 2rem;
+            margin-top: 10px;
+        }
+        
+        .subtitle {
+            font-size: 0.9rem;
+            margin-bottom: 20px;
+        }
+        
+        .glass-card {
+            padding: 20px;
+            border-radius: 20px;
+            margin-bottom: 20px; /* Reduced margin to pull footer up */
+        }
+        
+        #userInput {
+            padding: 14px;
+            font-size: 0.95rem;
+        }
+        
+        .btn-ask {
+            padding: 15px;
+            font-size: 1.1rem;
+        }
+
+        .footer-section {
+            margin-top: 20px; /* Prevents the massive white gap */
+            padding-bottom: 20px;
+        }
+
+        .about-text, .disclaimer-container {
+            font-size: 0.8rem;
+            line-height: 1.4;
+        }
     }
 }
 </style>
@@ -935,6 +962,7 @@ def category_page(category: str):
     """
 
     return html.replace("</body>", content + "</body>")
+
 
 
 
