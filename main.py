@@ -642,47 +642,36 @@ def home():
 
 @app.get("/{slug}", response_class=HTMLResponse)
 def dynamic_page(slug: str):
-    # 🚨 BLOCK JUNK / HACKER SLUGS
-    bad_words = [
-        ".env", "debug", "php", "aws", "config",
-        "login", "admin", "root", "sql", "backup",
-        "test", "tmp", "cache"
-    ]
 
-    slug_lower = slug.lower()
-    # ✅ ONLY redirect numbered old slugs
+    slug = slug.strip().lower()
+
+    # Redirect numbered old slugs
     if re.match(r'^\d+-', slug):
         clean_slug = slugify(slug)
         return RedirectResponse(url=f"/{clean_slug}", status_code=301)
 
-    # BLOCK FILE REQUESTS
-    if slug_lower.endswith((".ico", ".png", ".jpg", ".jpeg", ".css", ".js", ".json")):
-        return HTMLResponse(content="Page not found", status_code=404)
+    # Basic security filter only
+    bad_words = [".env", "debug", "php", "aws", "config",
+                 "login", "admin", "root", "sql", "backup",
+                "test", "tmp", "cache"]
 
-    # Block dangerous patterns
-    if any(word in slug_lower for word in bad_words):
-        return HTMLResponse(content="Page not found", status_code=404)
+    if any(word in slug for word in bad_words):
+        return HTMLResponse("Page not found", status_code=404)
 
-    # Block weird slugs
-    if len(slug) < 5 or "--" in slug:
-        return HTMLResponse(content="Page not found", status_code=404)
+    # ---- DB LOOKUP FIRST ----
     conn, cursor = get_cursor()
     cursor.execute("""
-    SELECT question, answer, related
-    FROM pages
-    WHERE LOWER(slug)=LOWER(%s)
+        SELECT question, answer, related
+        FROM pages
+        WHERE LOWER(slug)=LOWER(%s)
     """, (slug,))
-
     page = cursor.fetchone()
     conn.close()
 
-    # ✅ If page exists — continue normally
     if not page:
         return HTMLResponse("Page not found", status_code=404)
 
-    question = page[0]
-    answer = page[1]
-    related_json = page[2]
+    question, answer, related_json = page
  
     # 🔥 REMOVE SERIAL NUMBERS FROM OLD QUESTIONS
     clean_question = re.sub(r'^\d+[\.\)\s]+', '', question)
@@ -806,6 +795,7 @@ def category_page(category: str):
     """
 
     return html.replace("</body>", content + "</body>")
+
 
 
 
