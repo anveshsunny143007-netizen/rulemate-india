@@ -248,7 +248,7 @@ def sitemap():
 
         urls += f"""
         <url>
-            <loc>{base}/{slug}</loc>
+            <loc>{base}/p/{slug}</loc>
         </url>
         """
 
@@ -807,6 +807,7 @@ def old_redirect(full_path: str):
         return HTMLResponse("Page not found", status_code=404)
 
     return RedirectResponse(f"/p/{full_path}", status_code=301)
+
 
 
 
