@@ -679,7 +679,19 @@ def dynamic_page(slug: str):
     conn.close()
     
     if not page:
-        return HTMLResponse("Page not found", status_code=404)
+        # 🔥 Try redirect using cleaned slug
+        conn, cursor = get_cursor()
+        cursor.execute(
+            "SELECT slug FROM pages WHERE slug=%s",
+            (clean_slug,)
+        )
+        match = cursor.fetchone()
+        conn.close()
+
+    if match:
+        return RedirectResponse(url=f"/{match[0]}", status_code=301)
+
+    return HTMLResponse("Page not found", status_code=404)
 
     question = page[0]
     answer = page[1]
@@ -807,3 +819,4 @@ def category_page(category: str):
     """
 
     return html.replace("</body>", content + "</body>")
+
