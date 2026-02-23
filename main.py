@@ -670,26 +670,20 @@ def dynamic_page(slug: str):
     cursor.execute("""
     SELECT question, answer, related
     FROM pages
-    WHERE slug=%s
+    WHERE LOWER(slug)=LOWER(%s)
     """, (slug,))
 
     page = cursor.fetchone()
     conn.close()
-    
-    if not page:
-        # 🔥 Try redirect using cleaned slug
-        conn, cursor = get_cursor()
-        cursor.execute(
-            "SELECT slug FROM pages WHERE slug=%s",
-            (clean_slug,)
-        )
-        match = cursor.fetchone()
-        conn.close()
 
-    if match:
-        return RedirectResponse(url=f"/{match[0]}", status_code=301)
-
-    return HTMLResponse("Page not found", status_code=404)
+    # ✅ If page exists — continue normally
+    if page:
+        question = page[0]
+        answer = page[1]
+        related_json = page[2]
+    else:
+        # ❌ No page found → return 404
+        return HTMLResponse("Page not found", status_code=404)
 
     question = page[0]
     answer = page[1]
@@ -817,5 +811,6 @@ def category_page(category: str):
     """
 
     return html.replace("</body>", content + "</body>")
+
 
 
