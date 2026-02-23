@@ -753,6 +753,11 @@ def dynamic_page(slug: str):
 
 @app.get("/{slug}")
 def old_redirect(slug: str):
+
+    # 🔥 DO NOT redirect if already /p/ route
+    if slug.startswith("p/"):
+        return HTMLResponse("Page not found", status_code=404)
+
     return RedirectResponse(f"/p/{slug}", status_code=301)
 
 @app.get("/category/{category}", response_class=HTMLResponse)
@@ -801,6 +806,7 @@ def category_page(category: str):
     """
 
     return html.replace("</body>", content + "</body>")
+
 
 
 
