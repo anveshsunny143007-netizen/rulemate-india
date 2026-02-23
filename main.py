@@ -677,12 +677,7 @@ def dynamic_page(slug: str):
     conn.close()
 
     # ✅ If page exists — continue normally
-    if page:
-        question = page[0]
-        answer = page[1]
-        related_json = page[2]
-    else:
-        # ❌ No page found → return 404
+    if not page:
         return HTMLResponse("Page not found", status_code=404)
 
     question = page[0]
@@ -811,6 +806,7 @@ def category_page(category: str):
     """
 
     return html.replace("</body>", content + "</body>")
+
 
 
 
