@@ -82,7 +82,7 @@ def is_legal_question(question: str) -> bool:
         "legal", "rights", "act", "government", "license",
         "permit", "procedure", "certificate", "apply",
         "tax", "gst", "traffic", "driving", "offence",
-        "crime", "arrest", "bail",
+        "crime", "arrest", "bail","helmet", "road safety", "motor vehicle"
 
         # 🔥 ADD THESE IMPORTANT WORDS
         "passport", "aadhaar", "pan", "voter", "ration",
@@ -606,7 +606,7 @@ def home():
                     body: JSON.stringify({ question: queryInput.value })
                 });
                 const data = await response.json();
-                window.history.pushState({}, "", "/" + data.slug);
+                window.history.pushState({}, "", "/p/" + data.slug);
                 
                 aiAnswer.style.opacity = "0";
                 
@@ -640,7 +640,7 @@ def home():
 </html>
 """
 
-@app.get("/{slug}", response_class=HTMLResponse)
+@app.get("/p/{slug}", response_class=HTMLResponse)
 def dynamic_page(slug: str):
 
     slug = slug.strip().lower()
@@ -748,6 +748,9 @@ def dynamic_page(slug: str):
 
     return html.replace("</body>", structured_data + inject + "</body>")
 
+@app.get("/{slug}")
+def old_redirect(slug: str):
+    return RedirectResponse(f"/p/{slug}", status_code=301)
 
 @app.get("/category/{category}", response_class=HTMLResponse)
 def category_page(category: str):
@@ -795,6 +798,7 @@ def category_page(category: str):
     """
 
     return html.replace("</body>", content + "</body>")
+
 
 
 
