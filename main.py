@@ -650,11 +650,9 @@ def dynamic_page(slug: str):
     ]
 
     slug_lower = slug.lower()
-    # 🔥 AUTO REDIRECT OLD NUMBERED SLUGS
-    clean_slug = slugify(slug.replace("-", " "))
-
-    # redirect only if slug starts with number OR exceeds length
-    if slug != clean_slug and len(clean_slug) > 0:
+    # ✅ ONLY redirect numbered old slugs
+    if re.match(r'^\d+-', slug):
+        clean_slug = slugify(slug)
         return RedirectResponse(url=f"/{clean_slug}", status_code=301)
 
     # BLOCK FILE REQUESTS
@@ -819,4 +817,5 @@ def category_page(category: str):
     """
 
     return html.replace("</body>", content + "</body>")
+
 
