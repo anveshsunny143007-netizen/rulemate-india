@@ -645,6 +645,9 @@ def dynamic_page(slug: str):
 
     slug = slug.strip().lower()
 
+    # 🔥 NORMALIZE DASHES
+    slug = slug.replace("–", "-").replace("—", "-")
+
     # Redirect numbered old slugs
     if re.match(r'^\d+-', slug):
         clean_slug = slugify(slug)
@@ -798,6 +801,7 @@ def category_page(category: str):
     """
 
     return html.replace("</body>", content + "</body>")
+
 
 
 
