@@ -658,9 +658,8 @@ def dynamic_page(slug: str):
                  "login", "admin", "root", "sql", "backup",
                 "test", "tmp", "cache"]
 
-    if any(word in slug for word in bad_words):
+    if any(word in slug.split("-") for word in bad_words):
         return HTMLResponse("Page not found", status_code=404)
-
     # ---- DB LOOKUP FIRST ----
     conn, cursor = get_cursor()
     cursor.execute("""
@@ -751,14 +750,6 @@ def dynamic_page(slug: str):
 
     return html.replace("</body>", structured_data + inject + "</body>")
 
-@app.get("/{full_path:path}")
-def old_redirect(full_path: str):
-
-    # 🔥 if already starts with p/, don't redirect
-    if full_path.startswith("p/"):
-        return HTMLResponse("Page not found", status_code=404)
-
-    return RedirectResponse(f"/p/{full_path}", status_code=301)
 
 @app.get("/category/{category}", response_class=HTMLResponse)
 def category_page(category: str):
@@ -808,6 +799,14 @@ def category_page(category: str):
     return html.replace("</body>", content + "</body>")
 
 
+@app.get("/{full_path:path}")
+def old_redirect(full_path: str):
+
+    # 🔥 if already starts with p/, don't redirect
+    if full_path.startswith("p/"):
+        return HTMLResponse("Page not found", status_code=404)
+
+    return RedirectResponse(f"/p/{full_path}", status_code=301)
 
 
 
