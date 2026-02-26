@@ -651,7 +651,7 @@ def dynamic_page(slug: str):
     # Redirect numbered old slugs
     if re.match(r'^\d+-', slug):
         clean_slug = slugify(slug)
-        return RedirectResponse(url=f"/{clean_slug}", status_code=301)
+        return RedirectResponse(url=f"/p/{clean_slug}", status_code=301)
 
     # Basic security filter only
     bad_words = [".env", "debug", "php", "aws", "config",
@@ -683,7 +683,7 @@ def dynamic_page(slug: str):
     related_html = ""
     for q in related:
         clean_q = q.replace('"', '').replace("'", "")
-        related_html += f'<div class="related-q"><a href="/{slugify(clean_q)}" style="color:inherit; text-decoration:none; display:block;">{clean_q}</a></div>'
+        related_html += f'<div class="related-q"><a href="/p/{slugify(clean_q)}" style="color:inherit; text-decoration:none; display:block;">{clean_q}</a></div>'
 
     # Extract SHORT ANSWER for meta description
     meta_summary = answer
@@ -704,7 +704,7 @@ def dynamic_page(slug: str):
     seo_head = f"""
         <title>{clean_question.title()} | RuleMate India</title>
         <meta name="description" content="{meta_summary}">
-        <link rel="canonical" href="https://rulemate.in/{slug}">
+        <link rel="canonical" href="https://rulemate.in/p/{slug}">
     """
 
     html = home().replace(
@@ -807,6 +807,7 @@ def old_redirect(full_path: str):
         return HTMLResponse("Page not found", status_code=404)
 
     return RedirectResponse(f"/p/{full_path}", status_code=301)
+
 
 
 
