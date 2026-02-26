@@ -248,7 +248,7 @@ def sitemap():
 
         urls += f"""
         <url>
-            <loc>{base}/p/{slug}</loc>
+            <loc>{base}/{slug}</loc>
         </url>
         """
 
@@ -354,7 +354,7 @@ def ask_rule(q: Question):
         "login", "admin", "root", "sql", "backup", "certainly", "sure"
     ]
 
-    if any(word in slug.split("-") for word in bad_words):
+    if any(word in slug for word in bad_words):
         return {
             "answer": "Invalid query.",
             "slug": "",
@@ -606,7 +606,7 @@ def home():
                     body: JSON.stringify({ question: queryInput.value })
                 });
                 const data = await response.json();
-                window.history.pushState({}, "", "/p/" + data.slug);
+                window.history.pushState({}, "", "/" + data.slug);
                 
                 aiAnswer.style.opacity = "0";
                 
@@ -639,10 +639,19 @@ def home():
 </body>
 </html>
 """
-
-@app.get("/p/{slug}", response_class=HTMLResponse)
+    
+@app.get("/p/{slug}")
+def redirect_old_p(slug: str):
+    return RedirectResponse(url=f"/{slug}", status_code=301)
+    
+@app.get("/{slug}", response_class=HTMLResponse)
 def dynamic_page(slug: str):
 
+    reserved_paths = ["category", "robots.txt", "sitemap.xml", "ask"]
+
+    if slug in reserved_paths:
+        return HTMLResponse("Page not found", status_code=404)
+    
     slug = slug.strip().lower()
 
     # 🔥 NORMALIZE DASHES
@@ -704,7 +713,7 @@ def dynamic_page(slug: str):
     seo_head = f"""
         <title>{clean_question.title()} | RuleMate India</title>
         <meta name="description" content="{meta_summary}">
-        <link rel="canonical" href="https://rulemate.in/p/{slug}">
+        <link rel="canonical" href="https://rulemate.in/{slug}">
     """
 
     html = home().replace(
@@ -797,16 +806,6 @@ def category_page(category: str):
     """
 
     return html.replace("</body>", content + "</body>")
-
-
-@app.get("/{full_path:path}")
-def old_redirect(full_path: str):
-
-    # 🔥 if already starts with p/, don't redirect
-    if full_path.startswith("p/"):
-        return HTMLResponse("Page not found", status_code=404)
-
-    return RedirectResponse(f"/p/{full_path}", status_code=301)
 
 
 
